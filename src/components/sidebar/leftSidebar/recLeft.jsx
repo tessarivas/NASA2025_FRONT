@@ -1,19 +1,157 @@
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { Clock, Download, Star, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useFavorites } from '../../../hooks/useFavorites';
+import { Clock, Download, Star, LogOut, ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Heart, X } from 'lucide-react';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { historyAPI, favoritesAPI } from '../../../services/api';
 
 export default function RecLeft({ onMinimizeChange }) {
   const { user, logout } = useCurrentUser();
+  const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
+  const [currentView, setCurrentView] = useState('menu'); // 'menu', 'history', 'favorites'
+
+  const { data: historyData, isLoading: historyLoading, error: historyError } = useQuery({
+    queryKey: ['userHistory'],
+    queryFn: historyAPI.getUserHistory,
+    enabled: currentView === 'history',
+  });
+
+  const { data: favoritesData, isLoading: favoritesLoading, error: favoritesError } = useQuery({
+    queryKey: ['userFavorites', user?._id],
+    queryFn: () => favoritesAPI.getUserFavorites(user._id),
+    enabled: currentView === 'favorites' && !!user?._id,
+  });
 
   const toggleMinimize = () => {
     const newMinimizedState = !isMinimized;
     setIsMinimized(newMinimizedState);
+    // Reset to menu view when minimizing
+    if (newMinimizedState) {
+      setCurrentView('menu');
+    }
     // Notificar al componente padre sobre el cambio
     if (onMinimizeChange) {
       onMinimizeChange(newMinimizedState);
     }
   };
+
+  const handleViewChange = (view) => {
+    if (!isMinimized) {
+      setCurrentView(view);
+    }
+  };
+
+  const handleBackToMenu = () => {
+    setCurrentView('menu');
+  };
+
+  // Render history list
+  const renderHistoryList = () => (
+    <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <button 
+          onClick={handleBackToMenu}
+          className="text-orange-400 hover:text-orange-300 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>History</h3>
+      </div>
+      
+      {historyLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-white/60">Loading history...</div>
+        </div>
+      ) : historyError ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-red-400 text-sm">Error loading history</div>
+        </div>
+      ) : historyData && historyData.length > 0 ? (
+        <div className="space-y-2">
+          {historyData.map((item, index) => (
+            <div key={index} className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer">
+              <div className="flex items-start gap-2">
+                <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0 mt-1" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm font-medium truncate" style={{fontFamily: 'var(--font-space-mono)'}}>
+                    {item.title || item.query || 'Conversation'}
+                  </p>
+                  <p className="text-white/60 text-xs mt-1">
+                    {new Date(item.createdAt || item.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-white/60 text-sm text-center">
+            <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            No history yet
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Render favorites list
+  const renderFavoritesList = () => (
+    <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <button 
+          onClick={handleBackToMenu}
+          className="text-orange-400 hover:text-orange-300 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>Favorites</h3>
+      </div>
+      
+      {favoritesLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-white/60">Loading favorites...</div>
+        </div>
+      ) : favoritesError ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-red-400 text-sm">Error loading favorites</div>
+        </div>
+      ) : favoritesData && favoritesData.length > 0 ? (
+        <div className="space-y-2">
+          {favoritesData.map((articleId, index) => (
+            <div key={index} className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm font-medium truncate" style={{fontFamily: 'var(--font-space-mono)'}}>
+                    Article {articleId}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromFavorites(articleId);
+                  }}
+                  disabled={isRemovingFromFavorites}
+                  className="p-1 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                  title="Remove from favorites"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-white/60 text-sm text-center">
+            <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            No favorites yet
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   if (isMinimized) {
     return (
@@ -27,13 +165,18 @@ export default function RecLeft({ onMinimizeChange }) {
 
         {/* Minimized Menu Icons */}
         <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
-          <button className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-200 flex items-center justify-center" title="History">
+          <button 
+            onClick={() => handleViewChange('history')}
+            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-200 flex items-center justify-center" 
+            title="History"
+          >
             <Clock className="w-5 h-5 text-orange-400" />
           </button>
-          <button className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-200 flex items-center justify-center" title="Saves">
-            <Download className="w-5 h-5 text-orange-400" />
-          </button>
-          <button className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-200 flex items-center justify-center" title="Favorites">
+          <button 
+            onClick={() => handleViewChange('favorites')}
+            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-200 flex items-center justify-center" 
+            title="Favorites"
+          >
             <Star className="w-5 h-5 text-orange-400" />
           </button>
         </div>
@@ -79,32 +222,37 @@ export default function RecLeft({ onMinimizeChange }) {
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
-        {/* History */}
-        <button className="w-full h-16 rounded-t-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-200 ">
-          <div className="flex items-center gap-3 pl-4">
-            <Clock className="w-5 h-5 text-orange-400 flex-shrink-0" />
-            <span className="text-white text-sm font-medium tracking-wide" style={{fontFamily: 'var(--font-space-mono)'}}>History</span>
-          </div>
-        </button>
+      {/* Content based on current view */}
+      {currentView === 'history' ? (
+        renderHistoryList()
+      ) : currentView === 'favorites' ? (
+        renderFavoritesList()
+      ) : (
+        /* Default Menu View */
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+          {/* History */}
+          <button 
+            onClick={() => handleViewChange('history')}
+            className="w-full h-16 rounded-t-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-200"
+          >
+            <div className="flex items-center gap-3 pl-4">
+              <Clock className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <span className="text-white text-sm font-medium tracking-wide" style={{fontFamily: 'var(--font-space-mono)'}}>History</span>
+            </div>
+          </button>
 
-        {/* Saves */}
-        <button className="w-full h-16 bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-200">
-          <div className="flex items-center gap-3 pl-4">
-            <Download className="w-5 h-5 text-orange-400 flex-shrink-0" />
-            <span className="text-white text-sm font-medium tracking-wide" style={{fontFamily: 'var(--font-space-mono)'}}>Saves</span>
-          </div>
-        </button>
-
-        {/* Favorites */}
-        <button className="w-full h-16 rounded-b-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-200">
-          <div className="flex items-center gap-3 pl-4">
-            <Star className="w-5 h-5 text-orange-400 flex-shrink-0" />
-            <span className="text-white text-sm font-medium tracking-wide" style={{fontFamily: 'var(--font-space-mono)'}}>Favorites</span>
-          </div>
-        </button>
-      </div>
+          {/* Favorites */}
+          <button 
+            onClick={() => handleViewChange('favorites')}
+            className="w-full h-16 rounded-b-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-200"
+          >
+            <div className="flex items-center gap-3 pl-4">
+              <Star className="w-5 h-5 text-orange-400 flex-shrink-0" />
+              <span className="text-white text-sm font-medium tracking-wide" style={{fontFamily: 'var(--font-space-mono)'}}>Favorites</span>
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Minimize Menu Button */}
       <div className="p-4 border-t border-white/10">
