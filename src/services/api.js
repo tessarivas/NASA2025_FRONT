@@ -35,3 +35,25 @@ export const authAPI = {
     return response.json();
   },
 };
+
+export const chatApi = {
+  
+    chats: async (message) =>{
+    const response = await fetch(`${API_URL}/vertex-ai/structured-simple`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'prompt': message
+      }),
+    } );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al enviar el mensaje');
+    }
+
+    return response.json();
+  }
+}

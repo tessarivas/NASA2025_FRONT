@@ -1,6 +1,6 @@
 import GraphViewer from "./GraphViewer";
-import StarBorder from '../../UI/starBorder.jsx'; 
-import { Expand } from 'lucide-react';
+import StarBorder from '../../UI/StarBorder'; 
+import { Expand } from 'lucide-react'; // Importar el icono
 
 export default function RectRight() {
   const handleViewLarge = () => {
@@ -27,17 +27,16 @@ export default function RectRight() {
           <StarBorder
             as="button"
             className="w-full hover:scale-102 transition-transform cursor-pointer"
-            color="#FF6B35" // 🔥 Color de la luz (naranja)
-            backgroundColor="from-orange-500 to-orange-900" // 🎨 Fondo degradado
-            textColor="text-white" // ✏️ Color del texto
-            height="py-2" // 📏 Altura (más delgado)
-            fontSize="text-sm" // 🔤 Tamaño de letra
-            borderRadius="rounded-lg" // 🔲 Border radius
-            borderColor="border-orange-500/50" // 🖼️ Color del borde
-            speed="3s" // ⚡ Velocidad de animación
+            color="orange"
+            speed="4s"
+            backgroundColor="from-orange-500 to-black"
+            height="py-2" 
+            fontSize="text-sm"
+            borderRadius="rounded-lg"
             onClick={handleViewLarge}
+            style={{fontFamily: 'var(--font-space-mono)'}}
           >
-            <div className="flex items-center justify-center gap-2 font-bold" style={{fontFamily: 'var(--font-space-mono)'}}>
+            <div className="flex items-center justify-center gap-2">
               <Expand size={16} className="text-white" />
               <span>View Full Size</span>
             </div>
