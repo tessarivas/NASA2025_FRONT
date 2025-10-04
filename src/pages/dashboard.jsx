@@ -8,13 +8,21 @@ import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/UI/particles.jsx";
-import UserHeader from "@/components/UserHeader.jsx";
+import { useState } from "react";
 
 export default function Dashboard() {
+  const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
+
+  const handleMinimizeChange = (isMinimized) => {
+    setIsLeftSidebarMinimized(isMinimized);
+  };
+
+  // Calcular tamaños dinámicamente basado en el estado del sidebar
+  const leftPanelSize = isLeftSidebarMinimized ? 8 : 35;
+  const rightPanelSize = isLeftSidebarMinimized ? 92 : 65;
+
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
-      <UserHeader />
-      
       {/* LiquidEther - Capa más baja (z-0) */}
       <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay">
         <LiquidEther
@@ -47,15 +55,26 @@ export default function Dashboard() {
           direction="horizontal"
           className="flex-1 rounded-lg border border-white/0"
         >
-          <ResizablePanel defaultSize={25} minSize={10} maxSize={40}>
+          <ResizablePanel 
+            defaultSize={leftPanelSize} 
+            size={leftPanelSize}
+            minSize={isLeftSidebarMinimized ? 8 : 30} 
+            maxSize={isLeftSidebarMinimized ? 8 : 60}
+          >
             <div className="h-full pr-2">
-              <RecLeft />
+              <RecLeft onMinimizeChange={handleMinimizeChange} />
             </div>
           </ResizablePanel>
 
-          <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors" />
+          {!isLeftSidebarMinimized && (
+            <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors" />
+          )}
 
-          <ResizablePanel defaultSize={75} minSize={40}>
+          <ResizablePanel 
+            defaultSize={rightPanelSize}
+            size={rightPanelSize} 
+            minSize={40}
+          >
             <div className="h-full">
               <RecChat />
             </div>

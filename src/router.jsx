@@ -8,17 +8,17 @@ export const router = createBrowserRouter([
   { 
     path: "/", 
     element: (
-      <ProtectedRoute>
+      // <ProtectedRoute>
         <DashboardPage />
-      </ProtectedRoute>
+      // </ProtectedRoute>
     ) 
   },
   { 
     path: "/dashboard", 
     element: (
-      <ProtectedRoute>
+      // <ProtectedRoute>
         <DashboardPage />
-      </ProtectedRoute>
+      // </ProtectedRoute>
     ) 
   },
   { path: "/login", element: <LoginPage /> },
