@@ -39,9 +39,33 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-royal-blue: var(--royal-blue);
+  --color-navy-blue: var(--navy-blue);
+  --color-deep-blue: var(--deep-blue);
+  --color-gray: var(--gray);
+  --color-orange: var(--orange);
+  --color-hot-pink: var(--hot-pink);
+  --color-green: var(--green);
+  --color-blue: var(--blue);
+  --color-royal-blue-foreground: var(--royal-blue-foreground);
 }
 
 :root {
+  --royal-blue: #1A3A9D;
+  --navy-blue: #091437;
+  --deep-blue: #030409;
+  --gray: #393939;
+  --orange: #E26B40;
+  --hot-pink: #F63564;
+  --green: #43D2A7;
+  --blue: #00B8EB;
+
+  --font-cookie: 'Cookie', cursive;
+  --font-pacifico: 'Pacifico', cursive;
+  --font-sour-gummy: 'Sour Gummy', sans-serif;
+  --font-space-mono: 'Space Mono', monospace;
+  --font-zen-dots: 'Zen Dots', sans-serif;
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -74,6 +98,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --royal-blue-foreground: #ffffff;
 }
 
 .dark {
@@ -108,6 +133,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --royal-blue: #1A3A9D;
+  --royal-blue-foreground: #ffffff;
 }
 
 @layer base {
