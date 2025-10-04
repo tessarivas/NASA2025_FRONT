@@ -1,5 +1,5 @@
 import GraphViewer from "./GraphViewer";
-import StarBorder from '../../UI/StarBorder'; 
+import StarBorder from '../../UI/starBorder.jsx'; 
 import { Expand } from 'lucide-react';
 
 export default function RectRight() {
