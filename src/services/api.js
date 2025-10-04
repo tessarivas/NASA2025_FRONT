@@ -12,7 +12,7 @@ export const authAPI = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Error al iniciar sesión');
+      throw new Error(error.message || 'Login error. Please check your credentials.');
     }
 
     return response.json();
@@ -29,7 +29,89 @@ export const authAPI = {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Error al registrar usuario');
+      throw new Error(error.message || 'Error creating account');
+    }
+
+    return response.json();
+  },
+};
+
+export const historyAPI = {
+  getUserHistory: async () => {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_URL}/historical`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error fetching history');
+    }
+
+    return response.json();
+  },
+};
+
+export const favoritesAPI = {
+  getUserFavorites: async (userId) => {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_URL}/users/${userId}/favorites`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error fetching favorites');
+    }
+
+    return response.json();
+  },
+
+  addToFavorites: async (userId, articleId) => {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_URL}/users/${userId}/favorites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ articleId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error adding to favorites');
+    }
+
+    return response.json();
+  },
+
+  removeFromFavorites: async (userId, articleId) => {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_URL}/users/${userId}/favorites`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ articleId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error removing from favorites');
     }
 
     return response.json();
