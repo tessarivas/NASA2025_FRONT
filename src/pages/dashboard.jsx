@@ -35,16 +35,7 @@ export default function Dashboard() {
 
       {/* Particles - Capa intermedia (z-5) */}
       <div className="absolute inset-0 z-5 pointer-events-none">
-        <Particles
-          particleColors={['#ffffff', '#ffffff']}
-          particleCount={500}
-          particleSpread={10}
-          speed={0.1}
-          particleBaseSize={80}
-          moveParticlesOnHover={true}
-          alphaParticles={false}
-          disableRotation={false}
-        />
+        <Particles/>
       </div>
       
       {/* Dashboard content - Capa superior (z-10) */}
@@ -53,7 +44,7 @@ export default function Dashboard() {
           direction="horizontal"
           className="flex-1 rounded-lg border border-white/0"
         >
-          <ResizablePanel defaultSize={35} minSize={20} maxSize={60}>
+          <ResizablePanel defaultSize={25} minSize={10} maxSize={40}>
             <div className="h-full pr-2">
               <RecLeft />
             </div>
@@ -61,7 +52,7 @@ export default function Dashboard() {
 
           <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors" />
 
-          <ResizablePanel defaultSize={65} minSize={40}>
+          <ResizablePanel defaultSize={75} minSize={40}>
             <div className="h-full">
               <RecChat />
             </div>
