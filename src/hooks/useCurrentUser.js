@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { isValidToken } from '../lib/jwt';
+import { useNavigate } from 'react-router-dom';
 
 export function useCurrentUser() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const navigate = useNavigate();
 
   // Función para limpiar datos de autenticación
   const clearAuth = useCallback(() => {
@@ -59,7 +61,7 @@ export function useCurrentUser() {
 
   const logout = () => {
     clearAuth();
-    window.location.href = '/login';
+    navigate('/');
   };
 
   return { 

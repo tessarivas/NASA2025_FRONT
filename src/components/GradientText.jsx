@@ -3,17 +3,20 @@ export default function GradientText({
   className = '',
   colors = ['#ffaa40', '#9c40ff', '#ffaa40'],
   animationSpeed = 8,
-  showBorder = false
+  showBorder = false,
+  showBackground = true
 }) {
   const gradientStyle = {
     backgroundImage: `linear-gradient(to right, ${colors.join(', ')})`,
     animationDuration: `${animationSpeed}s`
   };
 
+  const containerClasses = showBackground 
+    ? `relative cursor-pointer mx-auto flex max-w-fit flex-row items-center justify-center rounded-[1.25rem] font-medium backdrop-blur transition-shadow duration-500 overflow-hidden ${className}`
+    : `relative cursor-pointer mx-auto flex max-w-fit flex-row items-center justify-center font-medium transition-shadow duration-500 overflow-hidden ${className}`;
+
   return (
-    <div
-      className={`relative mx-auto flex max-w-fit flex-row items-center justify-center rounded-[1.25rem] font-medium backdrop-blur transition-shadow duration-500 overflow-hidden cursor-pointer ${className}`}
-    >
+    <div className={containerClasses}>
       {showBorder && (
         <div
           className="absolute inset-0 bg-cover z-0 pointer-events-none animate-gradient"
