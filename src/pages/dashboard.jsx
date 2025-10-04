@@ -6,28 +6,48 @@ import {
 import RecLeft from "../components/sidebar/leftSidebar/recLeft.jsx";
 import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
-import Galaxy from "../components/UI/galaxy.jsx";
+import LiquidEther from "../components/UI/LiquidEther.jsx";
+import Particles from "../components/UI/particles.jsx";
 
 export default function Dashboard() {
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] p-4 relative">
-      <div className="absolute inset-0 z-0 mix-blend-lighten pointer-events-none">
-        <Galaxy
-          mouseInteraction={false}
-          mouseRepulsion={false}
-          density={3}
-          glowIntensity={0.3}
-          saturation={0}
-          hueShift={0}
-          twinkleIntensity={0.3}
-          rotationSpeed={0.05}
-          repulsionStrength={2}
-          autoCenterRepulsion={0}
-          starSpeed={0.1}
-          speed={1}
+      {/* LiquidEther - Capa más baja (z-0) */}
+      <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay">
+        <LiquidEther
+          colors={['#00B8EB', '#00B8EB', '#00B8EB']}
+          mouseForce={20}
+          cursorSize={100}
+          isViscous={false}
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo={true}
+          autoSpeed={0.2}
+          autoIntensity={2.5}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+        />
+      </div>
+
+      {/* Particles - Capa intermedia (z-5) */}
+      <div className="absolute inset-0 z-5 pointer-events-none">
+        <Particles
+          particleColors={['#ffffff', '#ffffff']}
+          particleCount={500}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={80}
+          moveParticlesOnHover={true}
+          alphaParticles={false}
+          disableRotation={false}
         />
       </div>
       
+      {/* Dashboard content - Capa superior (z-10) */}
       <div className="flex h-full gap-2 relative z-10">
         <ResizablePanelGroup
           direction="horizontal"

@@ -1,11 +1,10 @@
 import GraphViewer from "./GraphViewer";
-import StarBorder from '../../UI/StarBorder.jsx'; 
+import StarBorder from '../../UI/StarBorder'; 
+import { Expand } from 'lucide-react'; // Importar el icono
 
 export default function RectRight() {
   const handleViewLarge = () => {
-    // Aquí puedes agregar la lógica para abrir el grafo en grande
     console.log("Opening graph in large view...");
-    // Por ejemplo, abrir un modal o navegar a otra página
   };
 
   return (
@@ -21,21 +20,26 @@ export default function RectRight() {
         </div>
       </div>
       <div className="flex-1 flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-sm shadow-xl">
-        <div className="flex-1 p-2">
+        <div className="flex-1 px-2 pt-2">
           <GraphViewer />
         </div>
-        <div className="text-center p-2">
-          <h3 className="text-sm font-bold text-white mb-3" style={{fontFamily: 'var(--font-zen-dots)'}}>
-            Research Network
-          </h3>
+        <div className="p-2">
           <StarBorder
             as="button"
-            className="px-4 py-2 text-xs font-semibold text-white hover:text-cyan-300 transition-colors"
-            color="cyan"
-            speed="3s"
+            className="w-full hover:scale-102 transition-transform cursor-pointer"
+            color="orange"
+            speed="4s"
+            backgroundColor="from-orange-500 to-black"
+            height="py-2" 
+            fontSize="text-sm"
+            borderRadius="rounded-lg"
             onClick={handleViewLarge}
+            style={{fontFamily: 'var(--font-space-mono)'}}
           >
-            View Full Size
+            <div className="flex items-center justify-center gap-2">
+              <Expand size={16} className="text-white" />
+              <span>View Full Size</span>
+            </div>
           </StarBorder>
         </div>
       </div>
