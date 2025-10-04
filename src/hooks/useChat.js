@@ -19,13 +19,21 @@ export function useChat() {
             setResponseChat(response);
             console.log('Respuesta del chat:', response);
             
-            // Add bot response to messages
             const botMsg = { 
                 text: response.answer || response.message || "Respuesta recibida", 
                 sender: "bot", 
                 timestamp: new Date() 
             };
             setMessages(prev => [...prev, botMsg]);
+            
+            const historicalId = localStorage.getItem('historical_id');
+            if (!historicalId) {
+                const newHistoricalId = await generateHistorical(response.answer || response.message || "Respuesta recibida");
+                if (newHistoricalId) {
+                    localStorage.setItem('historical_id', newHistoricalId);
+                }
+            }
+
             
         } catch (error) {
             console.error('Error al enviar el mensaje:', error);
@@ -41,6 +49,49 @@ export function useChat() {
             setLoading(false);
         }
     }
+
+    const generateHistorical = async (message) => {
+    try {
+        // Obtener el usuario desde localStorage
+        const userString = localStorage.getItem('user');
+        const user = userString ? JSON.parse(userString) : null;
+
+        // Obtener el ID del usuario
+        const userId = user?.id;
+
+        if (!userId) {
+            console.error('No se encontró el ID del usuario');
+            return null;
+        }
+
+        // Generar título para el historial
+        const titleResponse = await chatApi.generateTitle(message);
+        const title = titleResponse.title || titleResponse.message;
+        console.log('Generated title:', title);
+        console.log('User ID:', userId);
+
+        // Agregar al historial
+        const historicalResponse = await chatApi.addToHistorical(title, userId);
+        console.log('Historical response:', historicalResponse);
+
+        return (
+            historicalResponse._id ||
+            historicalResponse.id ||
+            historicalResponse.historicalId ||
+            historicalResponse.historical_id
+        );
+    } catch (error) {
+        console.error('Error al agregar al historial:', error);
+        return null;
+    }
+};
+
+ const addToHistorial = async (message) => {
+
+ }
+
+
+
 
     return {
         messages,
