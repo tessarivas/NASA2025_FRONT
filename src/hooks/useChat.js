@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { chatApi } from "@/services/api";
 
+
+
 export function useChat() {
+
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
@@ -33,6 +36,8 @@ export function useChat() {
                     localStorage.setItem('historical_id', newHistoricalId);
                 }
             }
+            await addToHistorial({'rol': 'User', 'text': userMessage});
+            await addToHistorial({'rol': 'System', 'text': botMsg.text});
 
             
         } catch (error) {
@@ -87,8 +92,26 @@ export function useChat() {
 };
 
  const addToHistorial = async (message) => {
+    const historicalId = localStorage.getItem('historical_id');
+    if (!historicalId) {
+        console.error('No se encontró el ID del historial');
+        return null;
+    }
 
- }
+    try {
+
+        const response = await chatApi.addMessageToHistorial({
+            historical_user_id: historicalId,
+            rol: message.rol,
+            message: message.text
+        });
+        console.log('Mensaje agregado al historial:', response);
+        return response;
+    } catch (error) {
+        console.error('Error al agregar mensaje al historial:', error);
+        return null;
+    }
+};
 
 
 

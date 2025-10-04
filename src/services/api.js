@@ -177,15 +177,15 @@ export const chatApi = {
   },
 
   addMessageToHistorial: async (message) => {
-    const response = await fetch(`${API_URL}/historical/messages`, {
+    const response = await fetch(`${API_URL}/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        'historical_user_id': message.historical_id,
-        'rol': message.text,
-        'message': message.sender,
+        'historical_user_id': message.historical_user_id,
+        'rol': message.rol,
+        'message': message.message,
       }),
     });
     if (!response.ok) {
