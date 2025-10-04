@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ChevronDown, BarChart3, TrendingUp, Users } from 'lucide-react';
-import SpaceResearchChart from './areaChart.jsx';
-import PostsRadialChart from './radialChart.jsx';
-import ResearchersBarChart from './barChart.jsx';
+import SpaceResearchChart from '../rightSidebar/charts/areaChart.jsx';
+import PostsRadialChart from '../rightSidebar/charts/radialChart.jsx';
+import ResearchersBarChart from '../rightSidebar/charts/barChart.jsx';
 
 const chartOptions = [
   {
