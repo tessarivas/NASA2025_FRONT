@@ -11,9 +11,13 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
+    "@tanstack/react-query": "^5.90.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gsap": "^3.13.0",
+    "d3": "^7.9.0",
+    "graphology": "^0.26.0",
+    "iwanthue": "^2.0.0",
     "liquid-glass-react": "^1.1.1",
     "lucide": "^0.544.0",
     "lucide-react": "^0.544.0",
@@ -21,9 +25,13 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-globe.gl": "^2.36.0",
+    "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^7.9.3",
+    "recharts": "^3.2.1",
+    "sigma": "^3.0.2",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^4.1.14",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
