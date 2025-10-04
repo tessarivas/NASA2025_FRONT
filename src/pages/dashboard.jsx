@@ -6,12 +6,15 @@ import {
 import RecLeft from "../components/sidebar/leftSidebar/recLeft.jsx";
 import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
-import LiquidEther from "../components/UI/LiquidEther.jsx";
+import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/UI/particles.jsx";
+import UserHeader from "@/components/UserHeader.jsx";
 
 export default function Dashboard() {
   return (
-    <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] p-4 relative">
+    <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
+      <UserHeader />
+      
       {/* LiquidEther - Capa más baja (z-0) */}
       <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay">
         <LiquidEther
@@ -48,7 +51,7 @@ export default function Dashboard() {
       </div>
       
       {/* Dashboard content - Capa superior (z-10) */}
-      <div className="flex h-full gap-2 relative z-10">
+      <div className="flex flex-1 gap-2 relative z-10 p-4">
         <ResizablePanelGroup
           direction="horizontal"
           className="flex-1 rounded-lg border border-white/0"
