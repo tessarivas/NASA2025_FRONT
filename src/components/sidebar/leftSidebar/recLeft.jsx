@@ -59,7 +59,7 @@ export default function RecLeft({ onMinimizeChange }) {
           onClick={handleBackToMenu}
           className="text-orange-400 hover:text-orange-300 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 cursor-pointer" />
         </button>
         <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>History</h3>
       </div>
@@ -109,7 +109,7 @@ export default function RecLeft({ onMinimizeChange }) {
           onClick={handleBackToMenu}
           className="text-orange-400 hover:text-orange-300 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 cursor-pointer" />
         </button>
         <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>Favorites</h3>
       </div>
