@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
 import GradientText from '../GradientText';
 
 export default function SignUpForm({ onToggleToSignIn, onCancel }) {
@@ -10,16 +9,17 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
 
   const registerMutation = useMutation({
     mutationFn: authAPI.register,
     onSuccess: () => {
       setSuccess(true);
       setError('');
+      // Just show success message for now, don't auto-login
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+        // Switch to sign in form instead of navigating
+        onToggleToSignIn();
+      }, 2000);
     },
     onError: (error) => {
       console.error('Registration error:', error);
