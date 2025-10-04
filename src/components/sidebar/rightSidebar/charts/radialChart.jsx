@@ -9,7 +9,7 @@ import {
 } from "recharts"
 
 const chartData = [
-  { name: "posts", value: 1247, total: 1500, fill: "rgba(255, 107, 53, 0.7)" }, // 70% opacidad
+  { name: "posts", value: 1247, total: 1500, fill: "rgba(255, 107, 53, 0.7)" },
 ]
 
 export function PostsRadialChart() {

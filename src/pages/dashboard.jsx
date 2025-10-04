@@ -7,13 +7,8 @@ import RecLeft from "../components/sidebar/leftSidebar/recLeft.jsx";
 import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
-<<<<<<< HEAD
-import Particles from "../components/Particles.jsx"
-import UserHeader from "@/components/UserHeader.jsx";
-=======
 import Particles from "../components/UI/particles.jsx";
 import { useState } from "react";
->>>>>>> 32b4aed84a8582b031ca4b65fb77e28c589ffbe1
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
