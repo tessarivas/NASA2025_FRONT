@@ -3,6 +3,8 @@ import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import GradientText from '../GradientText';
+import StarBorder from '../UI/starBorder.jsx';
+import { ArrowLeft } from 'lucide-react';
 
 export default function SignUpForm({ onToggleToSignIn, onCancel }) {
   const [name, setName] = useState('');
@@ -51,90 +53,101 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
           </GradientText>
         </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 w-full">
-        {error && (
-          <div className="bg-hot-pink/20 border border-hot-pink text-white px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
-            {error}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6 w-full">
+          {error && (
+            <div className="bg-hot-pink/20 border border-hot-pink text-white px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="bg-green/20 border border-green text-white px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
+              Account created successfully! Redirecting...
+            </div>
+          )}
+
+          <div>
+            <label 
+              htmlFor="name" 
+              className="block text-sm font-medium text-white mb-2"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+              placeholder="Your full name"
+            />
           </div>
-        )}
-        
-        {success && (
-          <div className="bg-green/20 border border-green text-white px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
-            Account created successfully! Redirecting...
+
+          <div>
+            <label 
+              htmlFor="email" 
+              className="block text-sm font-medium text-white mb-2"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+              placeholder="your@email.com"
+            />
           </div>
-        )}
 
-        <div>
-          <label 
-            htmlFor="name" 
-            className="block text-sm font-medium text-white mb-2"
-            style={{ fontFamily: 'Space Mono, monospace' }}
+          <div>
+            <label 
+              htmlFor="password" 
+              className="block text-sm font-medium text-white mb-2"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
+              style={{ fontFamily: 'Space Mono, monospace' }}
+              placeholder="••••••••"
+            />
+          </div>
+
+          <StarBorder
+            as="button"
+            type="submit"
+            disabled={registerMutation.isPending}
+            className="w-full hover:scale-102 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            color="#FF6B35"
+            backgroundColor="from-orange-500 to-orange-900"
+            textColor="text-white"
+            height="py-3"
+            fontSize="text-sm"
+            borderRadius="rounded-lg"
+            borderColor="border-orange-500/50"
+            speed="3s"
+            onClick={handleSubmit}
           >
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
-            style={{ fontFamily: 'Space Mono, monospace' }}
-            placeholder="Your full name"
-          />
-        </div>
-
-        <div>
-          <label 
-            htmlFor="email" 
-            className="block text-sm font-medium text-white mb-2"
-            style={{ fontFamily: 'Space Mono, monospace' }}
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
-            style={{ fontFamily: 'Space Mono, monospace' }}
-            placeholder="your@email.com"
-          />
-        </div>
-
-        <div>
-          <label 
-            htmlFor="password" 
-            className="block text-sm font-medium text-white mb-2"
-            style={{ fontFamily: 'Space Mono, monospace' }}
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
-            style={{ fontFamily: 'Space Mono, monospace' }}
-            placeholder="••••••••"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={registerMutation.isPending}
-          className="w-full py-3 px-4 bg-royal-blue/20 hover:bg-royal-blue/30 text-blue border border-royal-blue/30 hover:border-blue/50 font-semibold rounded-lg backdrop-blur-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          style={{ fontFamily: 'Space Mono, monospace' }}
-        >
-          {registerMutation.isPending ? 'Creating account...' : 'Create Account'}
-        </button>
-      </form>
+            <div className="flex items-center justify-center font-bold text-lg" style={{fontFamily: 'var(--font-space-mono)'}}>
+              <span>{registerMutation.isPending ? 'Creating account...' : 'Create Account'}</span>
+            </div>
+          </StarBorder>
+        </form>
 
         {/* Toggle options */}
         <div className="text-center mt-6 space-y-2">
@@ -155,6 +168,7 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
             className="text-white/50 cursor-pointer hover:text-white/70 text-sm transition-colors duration-300"
             style={{ fontFamily: 'Space Mono, monospace' }}
           >
+            <ArrowLeft size={14} className="inline mb-0.5 mr-1" />
             Back to explore
           </button>
         </div>

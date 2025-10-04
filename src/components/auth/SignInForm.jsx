@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../../services/api';
 import GradientText from '../GradientText';
+import StarBorder from '../UI/starBorder'; 
+import { ArrowLeft } from 'lucide-react';
 
 export default function SignInForm({ onToggleToSignUp, onCancel }) {
   const [email, setEmail] = useState('');
@@ -99,14 +101,25 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
             />
           </div>
 
-          <button
+          <StarBorder
+            as="button"
             type="submit"
             disabled={loginMutation.isPending}
-            className="w-full py-3 cursor-pointer px-4 bg-royal-blue/20 hover:bg-royal-blue/30 text-blue border border-royal-blue/30 hover:border-blue/50 font-semibold rounded-lg backdrop-blur-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ fontFamily: 'Space Mono, monospace' }}
+            className="w-full hover:scale-102 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            color="#FF6B35"
+            backgroundColor="from-orange-500 to-orange-900"
+            textColor="text-white"
+            height="py-3"
+            fontSize="text-sm"
+            borderRadius="rounded-lg"
+            borderColor="border-orange-500/50"
+            speed="3s"
+            onClick={handleSubmit}
           >
-            {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
-          </button>
+            <div className="flex items-center justify-center font-bold text-lg" style={{fontFamily: 'var(--font-space-mono)'}}>
+              <span>{loginMutation.isPending ? 'Signing in...' : 'Sign In'}</span>
+            </div>
+          </StarBorder>
         </form>
 
         {/* Toggle options */}
@@ -125,10 +138,11 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
           </p>
           <button 
             onClick={onCancel}
-            className="text-white/50 cursor-pointer hover:text-white/70 text-sm transition-colors duration-300"
+            className="text-white/50 cursor-pointer hover:text-white/70 text-sm transition-colors duration-300 flex items-center justify-center gap-2 mx-auto"
             style={{ fontFamily: 'Space Mono, monospace' }}
           >
-            Back to explore
+            <ArrowLeft size={16} className="text-white/50" />
+            <span>Back to explore</span>
           </button>
         </div>
       </div>
