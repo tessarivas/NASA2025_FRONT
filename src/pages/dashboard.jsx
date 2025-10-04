@@ -7,7 +7,7 @@ import RecLeft from "../components/sidebar/leftSidebar/recLeft.jsx";
 import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
-import Particles from "../components/UI/particles.jsx";
+import Particles from "../components/Particles.jsx"
 import UserHeader from "@/components/UserHeader.jsx";
 
 export default function Dashboard() {
