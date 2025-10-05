@@ -20,10 +20,18 @@ export default function Dashboard() {
 
   // Función para recibir datos del chat
   const handleChatResponse = (responseData) => {
+    console.log('🔥 Dashboard - Datos recibidos del chat:', responseData);
+    
     if (responseData?.relationship_graph) {
+      console.log('📊 Dashboard - Actualizando graphData:', responseData.relationship_graph);
       setGraphData(responseData.relationship_graph);
+    } else {
+      console.log('❌ Dashboard - No hay relationship_graph en la respuesta');
     }
   };
+
+  // Console log cuando graphData cambia
+  console.log('🌟 Dashboard - Estado actual de graphData:', graphData);
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
@@ -70,9 +78,9 @@ export default function Dashboard() {
         >
           {/* Menu Izquierdo */}
           <ResizablePanel 
-            defaultSize={isLeftSidebarMinimized ? 6 : 25}
-            minSize={isLeftSidebarMinimized ? 6 : 20} 
-            maxSize={isLeftSidebarMinimized ? 6 : 40}
+            defaultSize={isLeftSidebarMinimized ? 8 : 25}
+            minSize={isLeftSidebarMinimized ? 8 : 20} 
+            maxSize={isLeftSidebarMinimized ? 8 : 40}
           >
             <div className="h-full">
               <RecLeft onMinimizeChange={handleMinimizeChange} />
