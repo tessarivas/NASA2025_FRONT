@@ -116,7 +116,7 @@ export default function Article({ articles }) {
                                     style={{ fontFamily: 'Space Mono, monospace' }}
                                 >
                                     {article.title}
-                                    <ExternalLink className="w-3 h-3 mt-1 opacity-60 group-hover/title:opacity-100 transition-opacity" />
+                                    <ExternalLink className="w-3 h-3 mt-1 opacity-60 group-hover/title:opacity-100 transition-opacity cursor-pointer" />
                                 </h3>
                             </button>
 
