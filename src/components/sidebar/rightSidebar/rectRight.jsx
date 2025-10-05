@@ -3,27 +3,19 @@ import StarBorder from '../../UI/starBorder.jsx';
 import GraphModal from '../rightSidebar/GraphModal.jsx';
 import ChartSelector from './charts.jsx';
 import { Expand } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
-export default function RectRight({ graphData = null }) {
+const RectRight = memo(function RectRight({ graphData = null }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localGraphData, setLocalGraphData] = useState(null);
 
-  console.log('🎯 RectRight - Props recibidas, graphData:', graphData);
-
-  // Actualizar datos locales cuando lleguen nuevos datos
+  // Solo logear cuando realmente hay cambios en graphData
   useEffect(() => {
-    console.log('🔄 RectRight - useEffect ejecutado, graphData:', graphData);
-    
-    if (graphData) {
-      console.log('✅ RectRight - Actualizando localGraphData:', graphData);
+    if (graphData && graphData !== localGraphData) {
+      console.log('🔄 RectRight - Actualizando localGraphData:', graphData);
       setLocalGraphData(graphData);
-    } else {
-      console.log('⚠️ RectRight - graphData es null o undefined');
     }
-  }, [graphData]);
-
-  console.log('📈 RectRight - Estado actual de localGraphData:', localGraphData);
+  }, [graphData, localGraphData]);
 
   const handleViewLarge = () => {
     console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData);
@@ -76,5 +68,7 @@ export default function RectRight({ graphData = null }) {
         graphData={localGraphData}
       />
     </>
-  )
-}
+  );
+});
+
+export default RectRight;

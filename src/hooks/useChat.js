@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { chatApi, historyAPI } from "@/services/api";
 
@@ -7,11 +7,10 @@ export function useChat() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
-    const [currentText, setCurrentText] = useState("");
     const [articles, setArticles] = useState([]);
     const [relationshipGraph, setRelationshipGraph] = useState(null);
 
-    const sendMessage = async (userMessage) => {
+    const sendMessage = useCallback(async (userMessage) => {
         // Add user message immediately
         const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
@@ -88,9 +87,9 @@ export function useChat() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [queryClient]);
 
-    const getMessagesHistorical = async (historicalId) => {
+    const getMessagesHistorical = useCallback(async (historicalId) => {
         try {
             localStorage.setItem("historical_id", historicalId);
             setMessages([]);
@@ -106,17 +105,45 @@ export function useChat() {
 
             console.log('Mensajes raw del backend:', rawMessages);
 
-            const formattedMessages = rawMessages.map(({ rol, message }) => {
-                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "bot"}"`);
-                return {
-                    sender: rol === "User" ? "user" : "bot", // Cambiar a lowercase para consistencia
+            const formattedMessages = rawMessages.map((msgData) => {
+                const { rol, message, related_articles, relationship_graph } = msgData;
+                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "system"}"`);
+                
+                const formattedMessage = {
+                    sender: rol === "User" ? "user" : "system", // Cambiar a "system" para consistencia
                     text: message,
                     timestamp: new Date(),
                 };
+
+                // Add articles and rawData for system messages
+                if (rol === "System" && related_articles) {
+                    formattedMessage.articles = related_articles;
+                    formattedMessage.rawData = {
+                        answer: message,
+                        related_articles,
+                        relationship_graph
+                    };
+                }
+
+                return formattedMessage;
             });
 
             setMessages(formattedMessages);
             console.log('Mensajes formateados del historial:', formattedMessages);
+
+            // Set global articles and graph from the last system message
+            const lastSystemMessage = formattedMessages
+                .filter(msg => msg.sender === "system")
+                .pop();
+
+            if (lastSystemMessage) {
+                if (lastSystemMessage.articles) {
+                    setArticles(lastSystemMessage.articles);
+                }
+                if (lastSystemMessage.rawData?.relationship_graph) {
+                    setRelationshipGraph(lastSystemMessage.rawData.relationship_graph);
+                }
+            }
             
             // Invalidate history query to refresh the sidebar
             queryClient.invalidateQueries({ queryKey: ['userHistory'] });
@@ -126,19 +153,18 @@ export function useChat() {
             console.error('Error al obtener mensajes del historial:', error);
             return [];
         }
-    };
+    }, [queryClient]);
 
-    const resetChat = () => {
+    const resetChat = useCallback(() => {
         setMessages([]);
         setResponseChat(null);
-        setCurrentText("");
         setArticles([]);
         setRelationshipGraph(null);
         // Clear historical_id from localStorage when starting a new chat
         localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
-    };
+    }, [queryClient]);
 
     return {
         messages,
@@ -146,10 +172,7 @@ export function useChat() {
         loading,
         sendMessage,
         responseChat,
-        currentText,
-        setCurrentText,
         relationshipGraph,
-        setRelationshipGraph,
         resetChat,
         articles,
         getMessagesHistorical
