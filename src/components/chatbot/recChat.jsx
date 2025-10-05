@@ -179,13 +179,13 @@ export default function RecChat({ initialMessage }) {
         </div>
       </div>
 
-      {/* I nput Section - Posición absoluta bottom */}
+      {/* Input Section - Posición absoluta bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-28 p-4 border-t border-white/20 bg-gradient-to-t from-navy-blue/30 to-transparent backdrop-blur-xs z-10">
         <div className="flex flex-col h-full justify-center max-w-2xl mx-auto">
           {/* Título del input */}
           <div className="text-center">
             <p
-              className="text-white/80 text-sm"
+              className="text-white/80 text-sm mb-2"
               style={{ fontFamily: 'var(--font-space-mono)' }}
             >
               What would you like to explore today?
@@ -217,11 +217,11 @@ export default function RecChat({ initialMessage }) {
               >
                 {loading ? (
                   <div className="animate-spin">
-                    <Sparkles size={20} />
+                    <Sparkles size={24} />
                   </div>
                 ) : (
                   <Send
-                    size={20}
+                    size={24}
                     className="group-hover:animate-pulse transition-transform cursor-pointer"
                   />
                 )}
@@ -230,7 +230,7 @@ export default function RecChat({ initialMessage }) {
           </div>
 
           {/* Footer */}
-          <div className="text-center">
+          <div className="text-center mt-1">
             <p
               className="text-white/50 text-xs"
               style={{ fontFamily: 'var(--font-space-mono)' }}
