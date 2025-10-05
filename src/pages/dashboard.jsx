@@ -17,10 +17,6 @@ export default function Dashboard() {
     setIsLeftSidebarMinimized(isMinimized);
   };
 
-  // Calcular tamaños dinámicamente basado en el estado del sidebar
-  const leftPanelSize = isLeftSidebarMinimized ? 8 : 35;
-  const rightPanelSize = isLeftSidebarMinimized ? 92 : 65;
-
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
       {/* LiquidEther - Capa más baja (z-0) */}
@@ -62,37 +58,46 @@ export default function Dashboard() {
       <div className="flex flex-1 gap-2 relative z-10 p-4">
         <ResizablePanelGroup
           direction="horizontal"
-          className="flex-1 rounded-lg border border-white/0"
+          className="flex-1 rounded-lg border border-white/0 gap-2"
         >
+          {/* Menu Izquierdo */}
           <ResizablePanel 
-            defaultSize={leftPanelSize} 
-            size={leftPanelSize}
-            minSize={isLeftSidebarMinimized ? 8 : 30} 
-            maxSize={isLeftSidebarMinimized ? 8 : 60}
+            defaultSize={isLeftSidebarMinimized ? 6 : 25}
+            minSize={isLeftSidebarMinimized ? 6 : 20} 
+            maxSize={isLeftSidebarMinimized ? 6 : 40}
           >
-            <div className="h-full pr-2">
+            <div className="h-full">
               <RecLeft onMinimizeChange={handleMinimizeChange} />
             </div>
           </ResizablePanel>
 
           {!isLeftSidebarMinimized && (
-            <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors" />
+            <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors w-2" />
           )}
 
+          {/* Chat Central */}
           <ResizablePanel 
-            defaultSize={rightPanelSize}
-            size={rightPanelSize} 
-            minSize={40}
+            defaultSize={isLeftSidebarMinimized ? 70 : 50}
+            minSize={30}
           >
             <div className="h-full">
               <RecChat />
             </div>
           </ResizablePanel>
-        </ResizablePanelGroup>
 
-        <div className="h-full w-80">
-          <RectRight />
-        </div>
+          <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors w-2" />
+
+          {/* Menu Derecho */}
+          <ResizablePanel 
+            defaultSize={isLeftSidebarMinimized ? 22 : 25}
+            minSize={20}
+            maxSize={35}
+          >
+            <div className="h-full">
+              <RectRight />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

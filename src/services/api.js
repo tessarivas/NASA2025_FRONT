@@ -39,8 +39,8 @@ export const authAPI = {
 export const historyAPI = {
   getUserHistory: async () => {
     const token = localStorage.getItem('token');
-    
-    const response = await fetch(`${API_URL}/historical`, {
+    const userId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : null;
+    const response = await fetch(`${API_URL}/historical/user/${userId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
