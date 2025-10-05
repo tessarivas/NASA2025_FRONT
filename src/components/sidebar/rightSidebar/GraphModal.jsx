@@ -28,7 +28,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         }, 200);
       }, 100);
     }
-  }, [isOpen]);
+  }, [isOpen, modalState.show]);
 
   // Datos de fallback MEJORADOS con más conexiones
   const defaultGraphData = {
@@ -87,20 +87,27 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
     const nodes = graphStructure.nodes.map(node => ({
       id: node.id,
-      name: node.label || node.name || `Research ${node.id}`,
-      group: node.category || node.type || node.group || "General",
+      name: node.name || node.label || `Research ${node.id}`,
+      group: node.group || node.category || node.type || "General",
       weight: node.weight || Math.random() * 3 + 1,
-      articleTitle: node.article_title || node.label || node.name
+      articleTitle: node.title || node.article_title || node.name || node.label,
+      title: node.title || node.article_title,
+      year: node.year,
+      authors: node.authors || [],
+      summary: node.summary || node.description,
+      doi: node.doi || "",
+      type: node.type || "article"
     }));
 
     const links = graphStructure.links.map(link => ({
       source: link.source,
       target: link.target,
-      value: link.weight || link.value || Math.random() * 3 + 1,
+      value: link.value || link.weight || Math.random() * 3 + 1,
       relationship: link.relationship || link.type || "related"
     }));
 
     console.log("✅ Datos procesados - Nodos:", nodes.length, "Enlaces:", links.length);
+    console.log("✅ Sample node:", nodes[0]);
 
     return { nodes, links };
   }
@@ -113,9 +120,85 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
   console.log("🕸️ Graph Modal - Datos procesados:", processedData);
   console.log("🕸️ Graph Modal - Datos finales:", currentGraphData);
 
+  // Validar y limpiar datos del grafo
+  const validateGraphData = (data) => {
+    if (!data || !data.nodes || !data.links) return defaultGraphData;
+    
+    const nodes = data.nodes || [];
+    const nodeIds = new Set(nodes.map(node => node.id));
+    
+    console.log('Available node IDs:', Array.from(nodeIds));
+    
+    // Filtrar enlaces que solo referencien nodos existentes
+    const validLinks = data.links.filter(link => {
+      const sourceExists = nodeIds.has(link.source);
+      const targetExists = nodeIds.has(link.target);
+      
+      if (!sourceExists) {
+        console.warn(`Link source not found: ${link.source}`);
+      }
+      if (!targetExists) {
+        console.warn(`Link target not found: ${link.target}`);
+      }
+      
+      return sourceExists && targetExists;
+    });
+    
+    // Verificar conectividad - encontrar nodos aislados
+    const connectedNodeIds = new Set();
+    validLinks.forEach(link => {
+      connectedNodeIds.add(link.source);
+      connectedNodeIds.add(link.target);
+    });
+    
+    const isolatedNodes = nodes.filter(node => !connectedNodeIds.has(node.id));
+    
+    if (isolatedNodes.length > 0) {
+      console.warn('Isolated nodes found:', isolatedNodes.map(n => n.id));
+      
+      // Conectar nodos aislados al nodo más relacionado (por grupo)
+      isolatedNodes.forEach(isolatedNode => {
+        const sameGroupNodes = nodes.filter(n => 
+          n.group === isolatedNode.group && n.id !== isolatedNode.id && connectedNodeIds.has(n.id)
+        );
+        
+        if (sameGroupNodes.length > 0) {
+          // Conectar al primer nodo del mismo grupo
+          validLinks.push({
+            source: isolatedNode.id,
+            target: sameGroupNodes[0].id,
+            value: 1
+          });
+          console.log(`Connected isolated node ${isolatedNode.id} to ${sameGroupNodes[0].id}`);
+        } else if (nodes.length > 1) {
+          // Si no hay nodos del mismo grupo, conectar al primer nodo disponible
+          const firstConnectedNode = Array.from(connectedNodeIds)[0];
+          if (firstConnectedNode) {
+            validLinks.push({
+              source: isolatedNode.id,
+              target: firstConnectedNode,
+              value: 1
+            });
+            console.log(`Connected isolated node ${isolatedNode.id} to ${firstConnectedNode}`);
+          }
+        }
+      });
+    }
+    
+    console.log(`Filtered ${data.links.length - validLinks.length} invalid links`);
+    console.log('Valid links:', validLinks);
+    
+    return {
+      nodes: nodes,
+      links: validLinks
+    };
+  };
+
+  const validatedGraphData = validateGraphData(currentGraphData);
+
   // Crear el grafo con D3
   useEffect(() => {
-    if (!containerRef.current || !modalState.panel || !currentGraphData) return;
+    if (!containerRef.current || !modalState.panel || !validatedGraphData) return;
 
     // Limpiar contenedor
     d3.select(containerRef.current).selectAll("*").remove();
@@ -125,7 +208,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     const height = containerRect.height;
 
     // Obtener grupos únicos dinámicamente
-    const uniqueGroups = [...new Set(currentGraphData.nodes.map(node => node.group))];
+    const uniqueGroups = [...new Set(validatedGraphData.nodes.map(node => node.group))];
     
     // Colores personalizados por categoría
     const colorPalette = ["#00B8EB", "#FF6B35", "#00D4AA", "#F63564", "#9B59B6", "#E67E22", "#1ABC9C", "#E74C3C"];
@@ -134,34 +217,15 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .range(colorPalette.slice(0, uniqueGroups.length));
 
     // Copiar datos para no mutar los originales
-    const links = currentGraphData.links.map(d => ({...d}));
-    const nodes = currentGraphData.nodes.map(d => ({...d}));
+    const links = validatedGraphData.links.map(d => ({...d}));
+    const nodes = validatedGraphData.nodes.map(d => ({...d}));
 
     // SIMULACIÓN MEJORADA para evitar dispersión
     const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links)
-        .id(d => d.id)
-        .distance(d => 60 + (d.value || 1) * 20) // Distancia basada en la fuerza de conexión
-        .strength(0.8) // Fuerza más alta para mantener conexiones
-      )
-      .force("charge", d3.forceManyBody()
-        .strength(d => -200 - (d.weight || 1) * 50) // Repulsión basada en peso
-      )
-      .force("center", d3.forceCenter(width / 2, height / 2)
-        .strength(0.1) // Fuerza de centrado más suave
-      )
-      .force("collision", d3.forceCollide()
-        .radius(d => 20 + (d.weight || 1) * 5) // Radio de colisión basado en peso
-        .strength(0.7)
-      )
-      // FUERZA ADICIONAL: mantener grupos juntos
-      .force("group", d3.forceX()
-        .x(d => {
-          const groupIndex = uniqueGroups.indexOf(d.group);
-          return (width / (uniqueGroups.length + 1)) * (groupIndex + 1);
-        })
-        .strength(0.05)
-      );
+      .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+      .force("charge", d3.forceManyBody().strength(-200))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("collision", d3.forceCollide().radius(25));
 
     // Crear SVG
     const svg = d3.select(containerRef.current)
@@ -170,7 +234,13 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
       .style("max-width", "100%")
-      .style("height", "auto");
+      .style("height", "auto")
+      .on("click", function(event) {
+        // Cerrar tooltip al hacer click en el fondo
+        if (event.target === this) {
+          d3.select(containerRef.current).select(".graph-tooltip").style("visibility", "hidden");
+        }
+      });
 
     // Crear gradientes para los nodos dinámicamente
     const defs = svg.append("defs");
@@ -205,32 +275,45 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", d => Math.max(8, Math.min(18, 10 + (d.weight || 1) * 2))) // Tamaño basado en peso
+      .attr("r", d => {
+        // Calculate distance from center
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const distance = Math.sqrt(Math.pow((d.x || centerX) - centerX, 2) + Math.pow((d.y || centerY) - centerY, 2));
+        return distance < 100 ? 14 : 12; // Center nodes larger
+      })
       .attr("fill", d => `url(#gradient-${d.group.replace(/\s+/g, '-')})`)
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 1.5)
       .style("cursor", "pointer");
 
-    // Tooltip mejorado
-    const tooltip = d3.select("body")
+    // Crear panel de información (fixed position en bottom-right)
+    const infoPanel = d3.select(containerRef.current)
       .append("div")
-      .attr("class", "graph-tooltip")
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.9)")
+      .attr("class", "graph-info-panel")
+      .style("position", "fixed")
+      .style("bottom", "80px")
+      .style("right", "30px")
+      .style("display", "none")
+      .style("background", "linear-gradient(135deg, rgba(9, 20, 55, 0.98) 0%, rgba(26, 58, 157, 0.98) 100%)")
       .style("color", "white")
-      .style("padding", "12px")
-      .style("border-radius", "8px")
+      .style("padding", "0")
+      .style("border-radius", "16px")
+      .style("border", "2px solid rgba(0, 184, 235, 0.3)")
       .style("font-family", "var(--font-space-mono)")
-      .style("font-size", "12px")
-      .style("max-width", "250px")
-      .style("box-shadow", "0 4px 12px rgba(0,0,0,0.3)")
-      .style("border", "1px solid rgba(255,255,255,0.2)")
-      .style("pointer-events", "none")
-      .style("opacity", 0)
-      .style("z-index", 1000);
+      .style("font-size", "13px")
+      .style("width", "420px")
+      .style("max-height", "500px")
+      .style("overflow-y", "auto")
+      .style("z-index", "1000")
+      .style("pointer-events", "auto")
+      .style("box-shadow", "0 20px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 184, 235, 0.2)")
+      .style("backdrop-filter", "blur(10px)")
+      .style("transition", "all 0.3s ease");
 
     // Crear etiquetas de grupos MEJORADAS
     const groupLabels = svg.append("g")
+      .attr("class", "group-labels")
       .selectAll("text")
       .data(d3.groups(nodes, d => d.group))
       .join("text")
@@ -244,7 +327,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .style("pointer-events", "none")
       .style("opacity", 0.8);
 
-    // Interacciones MEJORADAS
+    // Interacciones
     node
       .on("mouseenter", function(event, d) {
         // Efecto visual en el nodo
@@ -259,24 +342,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         link
           .style("opacity", l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.1)
           .attr("stroke", l => (l.source.id === d.id || l.target.id === d.id) ? "#FFD700" : "rgba(255, 255, 255, 0.3)");
-        
-        // Mostrar tooltip
-        tooltip
-          .style("opacity", 1)
-          .html(`
-            <div>
-              <strong>${d.articleTitle || d.name}</strong><br/>
-              <span style="color: ${colorScale(d.group)}">${d.group}</span><br/>
-              ${d.weight ? `<small>Weight: ${d.weight.toFixed(1)}</small>` : ''}
-            </div>
-          `)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY - 10) + "px");
-      })
-      .on("mousemove", function(event) {
-        tooltip
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY - 10) + "px");
       })
       .on("mouseleave", function(event, d) {
         // Restaurar nodo
@@ -291,9 +356,116 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         link
           .style("opacity", 0.6)
           .attr("stroke", "rgba(255, 255, 255, 0.3)");
+      })
+      .on("click", function (event, d) {
+        event.stopPropagation();
         
-        // Ocultar tooltip
-        tooltip.style("opacity", 0);
+        // Si el nodo es un artículo, mostrar información detallada en el panel
+        if (d.type === 'article' || d.title || d.articleTitle) {
+          const articleTitle = d.title || d.articleTitle || d.name;
+          const searchUrl = d.doi && d.doi !== "" 
+            ? `https://doi.org/${d.doi}` 
+            : `https://scholar.google.com/scholar?q=${encodeURIComponent(articleTitle)}`;
+          
+          const panelContent = `
+            <div style="padding: 20px;">
+              <!-- Header con botón de cerrar -->
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; border-bottom: 2px solid rgba(0, 184, 235, 0.3); padding-bottom: 12px;">
+                <div style="flex: 1; padding-right: 12px;">
+                  <div style="font-family: var(--font-zen-dots); font-size: 14px; color: #00B8EB; margin-bottom: 8px;">
+                    Article Details
+                  </div>
+                  <div style="font-weight: bold; font-size: 15px; line-height: 1.4; color: #fff;">
+                    ${articleTitle}
+                  </div>
+                </div>
+                <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 
+                        style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;" 
+                        onmouseover="this.style.background='rgba(255, 107, 53, 0.3)'; this.style.borderColor='rgba(255, 107, 53, 0.5)'" 
+                        onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.2)'">
+                  ×
+                </button>
+              </div>
+              
+              <!-- Metadata -->
+              <div style="margin-bottom: 16px;">
+                <div style="display: grid; grid-template-columns: auto 1fr; gap: 12px 16px; margin-bottom: 12px;">
+                  ${d.group ? `
+                    <div style="color: #aaa; font-size: 12px;">Category:</div>
+                    <div style="color: ${colorScale(d.group)}; font-weight: bold;">${d.group}</div>
+                  ` : ''}
+                  ${d.year ? `
+                    <div style="color: #aaa; font-size: 12px;">Year:</div>
+                    <div style="color: #fff; font-weight: bold;">${d.year}</div>
+                  ` : ''}
+                  ${d.authors && d.authors.length > 0 ? `
+                    <div style="color: #aaa; font-size: 12px;">Authors:</div>
+                    <div style="color: #fff;">${d.authors.join(', ')}</div>
+                  ` : ''}
+                </div>
+              </div>
+              
+              <!-- Summary -->
+              ${d.summary ? `
+                <div style="margin-bottom: 16px; padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 3px solid #00B8EB;">
+                  <div style="color: #00B8EB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Description</div>
+                  <div style="line-height: 1.6; color: #ddd; font-size: 13px;">${d.summary}</div>
+                </div>
+              ` : ''}
+              
+              <!-- Action Button -->
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" 
+                   style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: linear-gradient(135deg, #FF6B35 0%, #F63564 100%); color: white; text-decoration: none; font-weight: bold; border-radius: 8px; transition: all 0.3s; border: 1px solid rgba(255, 255, 255, 0.2); font-size: 13px;"
+                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 53, 0.4)'"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                  ${d.doi && d.doi !== "" ? 'View DOI' : 'Search on Google Scholar'}
+                  <span style="font-size: 16px;">→</span>
+                </a>
+              </div>
+            </div>
+          `;
+          
+          infoPanel
+            .html(panelContent)
+            .style("display", "block");
+            
+        } else if (d.type === 'gap') {
+          // Si es un research gap, mostrar descripción
+          const panelContent = `
+            <div style="padding: 20px;">
+              <!-- Header con botón de cerrar -->
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; border-bottom: 2px solid rgba(255, 107, 53, 0.3); padding-bottom: 12px;">
+                <div style="flex: 1;">
+                  <div style="font-family: var(--font-zen-dots); font-size: 14px; color: #FF6B35; margin-bottom: 8px;">
+                    Research Gap
+                  </div>
+                  <div style="font-weight: bold; font-size: 15px; line-height: 1.4; color: #fff;">
+                    ${d.name}
+                  </div>
+                </div>
+                <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" 
+                        style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;" 
+                        onmouseover="this.style.background='rgba(255, 107, 53, 0.3)'; this.style.borderColor='rgba(255, 107, 53, 0.5)'" 
+                        onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.2)'">
+                  ×
+                </button>
+              </div>
+              
+              <!-- Description -->
+              ${d.summary || d.description ? `
+                <div style="padding: 12px; background: rgba(255, 107, 53, 0.1); border-radius: 8px; border-left: 3px solid #FF6B35;">
+                  <div style="color: #FF6B35; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Description</div>
+                  <div style="line-height: 1.6; color: #ddd; font-size: 13px;">${d.summary || d.description}</div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          
+          infoPanel
+            .html(panelContent)
+            .style("display", "block");
+        }
       });
 
     // Hover en enlaces
@@ -302,21 +474,11 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         d3.select(this)
           .attr("stroke-width", Math.max(2, Math.sqrt(d.value || 1) * 2))
           .attr("stroke", "#FFD700");
-        
-        if (d.relationship) {
-          tooltip
-            .style("opacity", 1)
-            .html(`<strong>Relationship:</strong> ${d.relationship}<br/><small>Strength: ${(d.value || 1).toFixed(1)}</small>`)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY - 10) + "px");
-        }
       })
       .on("mouseleave", function(event, d) {
         d3.select(this)
           .attr("stroke-width", Math.max(1, Math.sqrt(d.value || 1) * 1.5))
           .attr("stroke", "rgba(255, 255, 255, 0.3)");
-        
-        tooltip.style("opacity", 0);
       });
 
     // Drag behavior MEJORADO
@@ -380,9 +542,9 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     // Cleanup
     return () => {
       simulation.stop();
-      tooltip.remove();
+      infoPanel.remove();
     };
-  }, [modalState.panel, currentGraphData]);
+  }, [modalState.panel, validatedGraphData]);
 
   // Cerrar modal con Escape
   useEffect(() => {
@@ -430,15 +592,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
                 <h2 className="text-2xl font-bold text-white" style={{fontFamily: 'var(--font-zen-dots)'}}>
                   Research Network Graph
                 </h2>
-                {graphData ? (
-                  <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full border border-green-500/30">
-                    Live Data
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-sm rounded-full border border-orange-500/30">
-                    Sample Data
-                  </span>
-                )}
               </div>
               <button 
                 onClick={onClose}
@@ -456,9 +609,9 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
           {/* Instructions */}
           <div className="absolute bottom-4 left-4 text-white/70 text-sm" style={{fontFamily: 'var(--font-space-mono)'}}>
-            <p>• <strong>Hover over nodes</strong> to see article details and connections</p>
-            <p>• <strong>Hover over lines</strong> to see relationships</p>
+            <p>• <strong>Click nodes</strong> to view detailed article information</p>
             <p>• <strong>Drag nodes</strong> to rearrange the network</p>
+            <p>• <strong>Colors</strong> represent different research categories</p>
             {!graphData && <p className="text-orange-400 mt-1">💡 Send a chat message to get real research data!</p>}
           </div>
         </div>

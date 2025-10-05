@@ -13,7 +13,7 @@ const RectRight = memo(function RectRight({
   const [localGraphData, setLocalGraphData] = useState(null);
   const [localArticlesData, setLocalArticlesData] = useState(null);
 
-  // Solo logear cuando realmente hay cambios en graphData
+  // Log changes to graphData
   useEffect(() => {
     if (graphData && graphData !== localGraphData) {
       setLocalGraphData(graphData);
@@ -42,7 +42,7 @@ const RectRight = memo(function RectRight({
         {/*sas Panel inferior con grafo */}
         <div className="flex-1 flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-sm shadow-xl">
           <div className="flex-1 px-2 pt-2">
-            <GraphViewer graphData={localGraphData} />
+            <GraphViewer graphData={graphData} />
           </div>
           <div className="p-2">
             <StarBorder
@@ -73,7 +73,7 @@ const RectRight = memo(function RectRight({
       <GraphModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        graphData={localGraphData || graphData} // ← Asegurar que se pasen los datos más recientes
+        graphData={graphData}
       />
     </>
   );

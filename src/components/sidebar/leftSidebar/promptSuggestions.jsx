@@ -119,8 +119,8 @@ const PromptSuggestions = ({ onSendPrompt }) => {
                   const Icon = category.icon;
                   return (
                     <div key={category.id} className="space-y-2">
-                      {/* Category Header */}
-                      <div className="flex items-center gap-2 px-2 py-1.5 sticky top-0 bg-gradient-to-r from-purple-900/60 to-purple-900/20 backdrop-blur-md rounded-lg border border-purple-500/30 shadow-sm">
+                      {/* Category Header - CON Z-INDEX CORREGIDO */}
+                      <div className="flex items-center gap-2 px-2 py-1.5 sticky top-0 bg-gradient-to-r from-purple-900/80 to-purple-900/40 backdrop-blur-md rounded-lg border border-purple-500/30 shadow-sm z-20">
                         <Icon className={`w-4 h-4 ${category.color}`} />
                         <span 
                           className={`text-xs font-semibold ${category.color}`}
@@ -131,12 +131,13 @@ const PromptSuggestions = ({ onSendPrompt }) => {
                       </div>
 
                       {/* Category Prompts */}
-                      <div className="space-y-1.5 pl-1">
+                      {/* Category Prompts - CON Z-INDEX MENOR */}
+                      <div className="space-y-1.5 pl-1 relative z-10">
                         {category.prompts.map((prompt, index) => (
                           <button
                             key={index}
                             onClick={() => handlePromptClick(prompt)}
-                            className={`w-full text-left p-2 rounded-lg ${category.bgColor} backdrop-blur-sm ${category.hoverColor} transition-all duration-200 group cursor-pointer border border-transparent hover:border-white/20 hover:shadow-md`}
+                            className={`w-full text-left p-2 rounded-lg ${category.bgColor} backdrop-blur-sm ${category.hoverColor} transition-all duration-200 group cursor-pointer border border-transparent hover:border-white/20 hover:shadow-md relative z-0`}
                           >
                             <div className="flex items-center gap-3">
                               <span 
