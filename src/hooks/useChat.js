@@ -13,7 +13,7 @@ export function useChat() {
     const [relationshipGraph, setRelationshipGraph] = useState(null);
     const sendMessage = async (userMessage) => {
         // Add user message immediately
-        const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
+        const userMsg = { text: userMessage, sender: "User", timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
 
         setLoading(true);
@@ -120,6 +120,19 @@ const getMessagesHistorical = async (historicalId) => {
     try {
         const response = await historyAPI.getMessagesFromHistorical(historicalId);
         console.log('Mensajes del historial:', response);
+        const rawMessages = Array.isArray(response)
+            ? response
+            : response.messages || response.data || [];
+
+        const formattedMessages = rawMessages.map(({ rol, message }) => ({
+            sender: rol === "User" ? "User" : "System", // o "System" si aplica
+            text: message,
+            timestamp: new Date(), // opcional
+            }));
+
+
+        setMessages(formattedMessages);
+        console.log('Mensajes formateados del historial:', formattedMessages);
         return response.messages || response.data || [];
     } catch (error) {
         console.error('Error al obtener mensajes del historial:', error);

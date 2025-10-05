@@ -75,12 +75,12 @@ export default function RecChat({ onResponse = () => {} }) {
             <div
               key={index}
               className={`mb-3 ${
-                message.sender === "user" ? "text-right" : "text-left"
+                message.sender === "User" ? "text-right" : "text-left"
               }`}
             >
               <div
                 className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender === "user"
+                  message.sender === "User"
                     ? "bg-(--royal-blue) text-white"
                     : message.isError
                     ? "bg-(--hot-pink) text-white"
