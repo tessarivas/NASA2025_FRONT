@@ -12,9 +12,10 @@ import {
   Heart,
   X,
   Plus,
+  Check,
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 
 export default function RecLeft({ onMinimizeChange }) {
@@ -22,6 +23,20 @@ export default function RecLeft({ onMinimizeChange }) {
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
   const [currentView, setCurrentView] = useState("menu"); // 'menu', 'history', 'favorites'
+  const [deletingHistoryId, setDeletingHistoryId] = useState(null); // Track which history is being deleted
+  const queryClient = useQueryClient();
+
+  // Mutation for deleting history
+  const deleteHistoryMutation = useMutation({
+    mutationFn: historyAPI.deleteHistory,
+    onSuccess: () => {
+      // Invalidate and refetch history data
+      queryClient.invalidateQueries({ queryKey: ["userHistory"] });
+    },
+    onError: (error) => {
+      console.error('Error deleting history:', error);
+    },
+  });
 
   const {
     data: historyData,
@@ -82,6 +97,39 @@ export default function RecLeft({ onMinimizeChange }) {
     console.log('Starting new chat - historical_id cleared');
   };
 
+  const handleDeleteHistory = async (historyId, event) => {
+    // Prevent event bubbling to avoid triggering other click handlers
+    event.stopPropagation();
+    
+    // Show confirmation UI inline
+    setDeletingHistoryId(historyId);
+  };
+
+  const confirmDeleteHistory = async (historyId, event) => {
+    event.stopPropagation();
+    
+    try {
+      await deleteHistoryMutation.mutateAsync(historyId);
+      
+      // If the deleted history is the current one, clear it from localStorage
+      const currentHistoryId = localStorage.getItem('historical_id');
+      if (currentHistoryId === historyId) {
+        localStorage.removeItem('historical_id');
+      }
+      
+      // Hide confirmation UI
+      setDeletingHistoryId(null);
+    } catch (error) {
+      console.error('Failed to delete history:', error);
+      setDeletingHistoryId(null);
+    }
+  };
+
+  const cancelDeleteHistory = (event) => {
+    event.stopPropagation();
+    setDeletingHistoryId(null);
+  };
+
   // Render history list
   const renderHistoryList = () => (
     <div className="flex-1 overflow-y-auto px-4 pb-4">
@@ -113,22 +161,61 @@ export default function RecLeft({ onMinimizeChange }) {
           {historyData.map((item, index) => (
             <div
               key={index}
-              className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer"
+              className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer group relative"
+              title={deletingHistoryId === item._id ? "" : (item.title || item.query || "Conversation")} // Hide tooltip when confirming
             >
-              <div className="flex items-start gap-2">
-                <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0 mt-1" />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-white text-sm font-medium truncate"
-                    style={{ fontFamily: "var(--font-space-mono)" }}
-                  >
-                    {item.title || item.query || "Conversation"}
-                  </p>
-                  <p className="text-white/60 text-xs mt-1">
-                    {new Date(item.createdAt || item.date).toLocaleDateString()}
-                  </p>
+              {deletingHistoryId === item._id ? (
+                // Confirmation UI
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                    <span className="text-white text-sm font-medium" style={{ fontFamily: "var(--font-space-mono)" }}>
+                      Delete this chat?
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {/* Confirm delete button */}
+                    <button
+                      onClick={(e) => confirmDeleteHistory(item._id, e)}
+                      className="p-1 hover:bg-green-500/20 rounded-md transition-colors"
+                      title="Confirm delete"
+                      disabled={deleteHistoryMutation.isPending}
+                    >
+                      <Check className="w-3 h-3 text-green-400 hover:text-green-300" />
+                    </button>
+                    {/* Cancel button */}
+                    <button
+                      onClick={cancelDeleteHistory}
+                      className="p-1 hover:bg-gray-500/20 rounded-md transition-colors"
+                      title="Cancel"
+                    >
+                      <X className="w-3 h-3 text-gray-400 hover:text-gray-300" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                // Normal UI
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-white text-sm font-medium truncate"
+                      style={{ fontFamily: "var(--font-space-mono)" }}
+                    >
+                      {item.title || item.query || "Conversation"}
+                    </p>
+                  </div>
+                  
+                  {/* Delete button - only visible on hover */}
+                  <button
+                    onClick={(e) => handleDeleteHistory(item._id, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-500/20 rounded-md"
+                    title="Delete chat history"
+                  >
+                    <X className="w-3 h-3 text-red-400 hover:text-red-300" />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

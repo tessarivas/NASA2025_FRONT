@@ -87,6 +87,8 @@ export function useChat() {
         setResponseChat(null);
         setCurrentText("");
         setArticles([]);
+        // Clear historical_id from localStorage when starting a new chat
+        localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
     };

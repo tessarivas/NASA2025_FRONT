@@ -17,9 +17,14 @@ export default function RecChat({ onResponse, initialMessage }) {
   const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
 
-  // Send initial message if provided (only once)
+  // Send initial message if provided (only once and only if no existing chat)
   useEffect(() => {
-    if (initialMessage && initialMessage.trim() && !hasInitialMessageSent.current) {
+    const existingHistoricalId = localStorage.getItem('historical_id');
+    
+    if (initialMessage && 
+        initialMessage.trim() && 
+        !hasInitialMessageSent.current && 
+        !existingHistoricalId) {
       hasInitialMessageSent.current = true;
       sendMessage(initialMessage.trim());
     }
