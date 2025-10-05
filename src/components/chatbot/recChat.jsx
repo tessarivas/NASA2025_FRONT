@@ -11,17 +11,6 @@ export default function RecChat() {
     articles,
   } = useChat();
 
-  // Interceptar la última respuesta del useChat
-  useEffect(() => {
-    if (lastResponse && lastResponse.relationship_graph) {
-      console.log("🎯 RecChat - Interceptando respuesta de useChat:", lastResponse);
-      console.log("📤 RecChat - Pasando datos al Dashboard:", lastResponse);
-      
-      if (onResponse) {
-        onResponse(lastResponse);
-      }
-    }
-  }, [lastResponse, onResponse]);
 
   const handleChat = async () => {
     if (currentText.trim()) {
