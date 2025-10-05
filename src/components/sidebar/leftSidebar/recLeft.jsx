@@ -291,7 +291,7 @@ export default function RecLeft({ onMinimizeChange }) {
                       title={article.title} // Tooltip with full title
                     >
                       <p
-                        className="text-white text-sm font-medium truncate group-hover/title:text-blue-300 transition-colors "
+                        className="text-white text-sm font-medium truncate group-hover/title:text-blue-300 transition-colors"
                         style={{ fontFamily: "var(--font-space-mono)" }}
                       >
                         {article.title}
