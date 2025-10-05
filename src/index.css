@@ -260,3 +260,45 @@
   background: linear-gradient(180deg, #FF7A33 0%, #D63A12 100%);
   transform: scaleX(1.2);
 }
+
+/* Scroll personalizado para sugerencias - NUEVO */
+.suggestions-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-track {
+  background: rgba(139, 92, 246, 0.2); /* Púrpura suave como el tema */
+  border-radius: 10px;
+}
+
+.suggestions-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9B59B6 0%, #7C3AED 100%); /* Gradiente púrpura */
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.suggestions-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #A855F7 0%, #8B5CF6 100%); /* Púrpura más claro en hover */
+  transform: scaleX(1.3);
+}
+
+/* Variante alternativa con tema del componente */
+.suggestions-scroll-alt::-webkit-scrollbar {
+  width: 4px;
+}
+
+.suggestions-scroll-alt::-webkit-scrollbar-track {
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: 8px;
+}
+
+.suggestions-scroll-alt::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #8B5CF6, #A855F7, #C084FC);
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.suggestions-scroll-alt::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #A855F7, #C084FC, #DDD6FE);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
