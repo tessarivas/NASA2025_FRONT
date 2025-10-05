@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { chatApi, historyAPI } from "@/services/api";
 
@@ -7,11 +7,10 @@ export function useChat() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
-    const [currentText, setCurrentText] = useState("");
     const [articles, setArticles] = useState([]);
     const [relationshipGraph, setRelationshipGraph] = useState(null);
 
-    const sendMessage = async (userMessage) => {
+    const sendMessage = useCallback(async (userMessage) => {
         // Add user message immediately
         const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
@@ -88,9 +87,9 @@ export function useChat() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [queryClient]);
 
-    const getMessagesHistorical = async (historicalId) => {
+    const getMessagesHistorical = useCallback(async (historicalId) => {
         try {
             localStorage.setItem("historical_id", historicalId);
             setMessages([]);
@@ -126,19 +125,18 @@ export function useChat() {
             console.error('Error al obtener mensajes del historial:', error);
             return [];
         }
-    };
+    }, [queryClient]);
 
-    const resetChat = () => {
+    const resetChat = useCallback(() => {
         setMessages([]);
         setResponseChat(null);
-        setCurrentText("");
         setArticles([]);
         setRelationshipGraph(null);
         // Clear historical_id from localStorage when starting a new chat
         localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
-    };
+    }, [queryClient]);
 
     return {
         messages,
@@ -146,10 +144,7 @@ export function useChat() {
         loading,
         sendMessage,
         responseChat,
-        currentText,
-        setCurrentText,
         relationshipGraph,
-        setRelationshipGraph,
         resetChat,
         articles,
         getMessagesHistorical

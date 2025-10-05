@@ -8,42 +8,31 @@ import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/Particles.jsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useChatContext } from "@/context/ChatContext";
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  const [graphData, setGraphData] = useState(null); // Estado para datos del grafo
+  const [graphData, setGraphData] = useState(null);
   const location = useLocation();
   const { relationshipGraph } = useChatContext();
 
-  const handleMinimizeChange = (isMinimized) => {
+  const handleMinimizeChange = useCallback((isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
-  };
+  }, []);
 
-  // Actualizar graphData cuando relationshipGraph cambie
+  // Actualizar graphData solo cuando relationshipGraph realmente cambie
   useEffect(() => {
-    if (relationshipGraph) {
-      console.log('📊 Dashboard - Actualizando graphData desde contexto:', relationshipGraph);
+    if (relationshipGraph && relationshipGraph !== graphData) {
       setGraphData(relationshipGraph);
     }
-  }, [relationshipGraph]);
+  }, [relationshipGraph, graphData]);
 
-  // Función para recibir datos del chat (mantener para compatibilidad)
-  const handleChatResponse = (responseData) => {
-    console.log('🔥 Dashboard - Datos recibidos del chat:', responseData);
-    
-    if (responseData?.relationship_graph) {
-      console.log('📊 Dashboard - Actualizando graphData:', responseData.relationship_graph);
-      setGraphData(responseData.relationship_graph);
-    } else {
-      console.log('❌ Dashboard - No hay relationship_graph en la respuesta');
-    }
-  };
-
-  // Console log cuando graphData cambia
-  console.log('🌟 Dashboard - Estado actual de graphData:', graphData);
+  // Memoizar el initialMessage para evitar re-renders
+  const memoizedInitialMessage = useMemo(() => {
+    return location.state?.newMessage;
+  }, [location.state?.newMessage]);
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
@@ -110,8 +99,7 @@ export default function Dashboard() {
           >
             <div className="h-full">
               <RecChat 
-                onResponse={handleChatResponse} 
-                initialMessage={location.state?.newMessage} 
+                initialMessage={memoizedInitialMessage} 
               />
             </div>
           </ResizablePanel>

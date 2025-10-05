@@ -3,24 +3,18 @@ import GradientText from "../GradientText";
 import { Send, Sparkles, Rocket } from "lucide-react";
 import { useChatContext } from "@/context/ChatContext";
 import Article from './Article';
+import { useInputText } from "@/hooks/useInputText";
 
-export default function RecChat({ onResponse = () => {}, initialMessage }) {
+export default function RecChat({ initialMessage }) {
   const {
     messages,
-    currentText,
-    setCurrentText,
     sendMessage,
     loading,
     articles,
-    relationshipGraph,
     resetChat,
   } = useChatContext();
 
-  useEffect(() => {
-    if (relationshipGraph) {
-      onResponse({ relationship_graph: relationshipGraph });
-    }
-  }, [relationshipGraph, onResponse]);
+  const { currentText, setCurrentText } = useInputText();
   
   const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
@@ -73,22 +67,6 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
-
-  // Interceptar respuestas para pasar datos al Dashboard
-  useEffect(() => {
-    if (onResponse) {
-      // Buscar el último mensaje que tenga rawData
-      const lastMessageWithData = messages
-        .slice()
-        .reverse()
-        .find(msg => msg.rawData?.relationship_graph);
-      
-      if (lastMessageWithData?.rawData?.relationship_graph) {
-        console.log("📤 RecChat - Pasando datos al Dashboard:", lastMessageWithData.rawData);
-        onResponse(lastMessageWithData.rawData);
-      }
-    }
-  }, [messages, onResponse]);
 
   const handleChat = async () => {
     if (currentText.trim()) {

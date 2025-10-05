@@ -1,10 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from "react";
 import * as d3 from "d3";
 
-const GraphViewer = ({ graphData = null }) => {
+const GraphViewer = memo(function GraphViewer({ graphData = null }) {
   const containerRef = useRef(null);
 
-  console.log('📊 GraphViewer - Props recibidas, graphData:', graphData);
+  // Solo logear cuando realmente hay datos nuevos
+  useEffect(() => {
+    if (graphData) {
+      console.log('📊 GraphViewer - Datos recibidos:', graphData);
+    }
+  }, [graphData]);
 
   // Datos de fallback si no se proporcionan datos
   const defaultGraphData = {
@@ -35,8 +40,49 @@ const GraphViewer = ({ graphData = null }) => {
     ],
   };
 
-  // Usar datos proporcionados o datos por defecto
-  const currentGraphData = graphData || defaultGraphData;
+  // Función para validar y limpiar datos del grafo
+  const validateGraphData = (data) => {
+    if (!data || !data.nodes || !data.links) {
+      console.warn('GraphViewer - Datos de grafo inválidos:', data);
+      return null;
+    }
+
+    // Crear un Set de IDs de nodos para búsqueda rápida
+    const nodeIds = new Set(data.nodes.map(node => node.id));
+    
+    // Filtrar links que referencien nodos inexistentes
+    const validLinks = data.links.filter(link => {
+      const sourceExists = nodeIds.has(link.source);
+      const targetExists = nodeIds.has(link.target);
+      
+      if (!sourceExists) {
+        console.warn(`GraphViewer - Nodo source no encontrado: ${link.source}`);
+      }
+      if (!targetExists) {
+        console.warn(`GraphViewer - Nodo target no encontrado: ${link.target}`);
+      }
+      
+      return sourceExists && targetExists;
+    });
+
+    // Validar que los nodos tengan las propiedades requeridas
+    const validNodes = data.nodes.filter(node => {
+      if (!node.id || !node.name || !node.group) {
+        console.warn('GraphViewer - Nodo inválido:', node);
+        return false;
+      }
+      return true;
+    });
+
+    return {
+      nodes: validNodes,
+      links: validLinks
+    };
+  };
+
+  // Usar datos proporcionados o datos por defecto, con validación
+  const rawGraphData = graphData || defaultGraphData;
+  const currentGraphData = validateGraphData(rawGraphData) || defaultGraphData;
   
   console.log('🎨 GraphViewer - Datos que se van a usar:', currentGraphData);
   console.log('🔹 GraphViewer - ¿Usando datos reales?', !!graphData);
@@ -72,20 +118,21 @@ const GraphViewer = ({ graphData = null }) => {
     const links = currentGraphData.links.map((d) => ({ ...d }));
     const nodes = currentGraphData.nodes.map((d) => ({ ...d }));
 
-    // Crear simulación de fuerzas - ajustada para espacio pequeño
-    const simulation = d3
-      .forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id((d) => d.id).distance(40))
-      .force("charge", d3.forceManyBody().strength(-150))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(15))
-      .force("bounds", () => {
-        // Fuerza para mantener nodos dentro de los límites
-        for (let node of nodes) {
-          node.x = Math.max(15, Math.min(width - 15, node.x));
-          node.y = Math.max(15, Math.min(height - 15, node.y));
-        }
-      });
+    try {
+      // Crear simulación de fuerzas - ajustada para espacio pequeño
+      const simulation = d3
+        .forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id((d) => d.id).distance(40))
+        .force("charge", d3.forceManyBody().strength(-150))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collision", d3.forceCollide().radius(15))
+        .force("bounds", () => {
+          // Fuerza para mantener nodos dentro de los límites
+          for (let node of nodes) {
+            node.x = Math.max(15, Math.min(width - 15, node.x));
+            node.y = Math.max(15, Math.min(height - 15, node.y));
+          }
+        });
 
     // Crear SVG
     const svg = d3
@@ -241,13 +288,31 @@ const GraphViewer = ({ graphData = null }) => {
     return () => {
       simulation.stop();
     };
-  }, [currentGraphData]); // Agregar currentGraphData como dependencia
+    
+    } catch (error) {
+      console.error('GraphViewer - Error al crear el grafo:', error);
+      console.error('GraphViewer - Datos que causaron el error:', currentGraphData);
+      
+      // Mostrar mensaje de error en el contenedor
+      d3.select(containerRef.current)
+        .append("div")
+        .style("display", "flex")
+        .style("align-items", "center")
+        .style("justify-content", "center")
+        .style("height", "100%")
+        .style("color", "#ff6b6b")
+        .style("font-family", "monospace")
+        .style("font-size", "12px")
+        .style("text-align", "center")
+        .html("Error loading graph<br/>Check console for details");
+    }
+  }, [currentGraphData]);
 
   return (
     <div className="w-full h-[300px] bg-black/60 rounded-xl p-2 relative border border-white/20 overflow-hidden">
       <div ref={containerRef} className="w-full h-full relative" />
     </div>
   );
-};
+});
 
 export default GraphViewer;
