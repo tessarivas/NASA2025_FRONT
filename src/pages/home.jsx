@@ -6,11 +6,12 @@ import SignInForm from '../components/auth/SignInForm';
 import SignUpForm from '../components/auth/SignUpForm';
 import FadeContent from '../components/FadeContent'
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function HomePage() {
     const { user, isAuthenticated } = useCurrentUser();
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState('welcome'); // 'welcome', 'signin', 'signup'
 
     // Función para obtener el primer nombre
@@ -31,8 +32,20 @@ export default function HomePage() {
     };
 
     const handleSearch = (query) => {
-        console.log('Searching for:', query);
-        // Aquí puedes agregar la lógica de búsqueda
+        if (!query.trim()) return;
+        
+        // Si el usuario está autenticado, ir al dashboard con el mensaje
+        if (isAuthenticated) {
+            // Limpiar el historical_id para crear un nuevo chat
+            localStorage.removeItem('historical_id');
+            
+            navigate('/dashboard', {
+                state: { newMessage: query.trim() }
+            });
+        } else {
+            // Si no está autenticado, mostrar el formulario de sign in
+            setCurrentView('signin');
+        }
     };
 
     const handleSignInClick = () => {

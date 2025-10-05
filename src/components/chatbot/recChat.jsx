@@ -1,8 +1,10 @@
 import { useChat } from "@/hooks/useChat";
+import { useEffect, useRef } from "react";
 
-export default function RecChat() {
-  const { messages, currentText, setCurrentText, sendMessage, loading } =
+export default function RecChat({ initialMessage }) {
+  const { messages, currentText, setCurrentText, sendMessage, loading, resetChat } =
     useChat();
+  const hasInitialMessageSent = useRef(false);
 
   const handleChat = () => {
     if (currentText.trim()) {
@@ -17,29 +19,28 @@ export default function RecChat() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!currentText.trim()) return;
-
-    try {
-      const response = await fetch("/vertex-ai/structured-simple", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentText }),
-      });
-
-      const data = await response.json();
-
-      // Llamar a la función del padre para pasar los datos
-      if (onResponse && data.relationship_graph) {
-        onResponse(data);
-      }
-
-      setCurrentText("");
-    } catch (error) {
-      console.error("Error:", error);
+  // Send initial message if provided (only once)
+  useEffect(() => {
+    if (initialMessage && initialMessage.trim() && !hasInitialMessageSent.current) {
+      hasInitialMessageSent.current = true;
+      sendMessage(initialMessage.trim());
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
+
+  // Listen for new chat events
+  useEffect(() => {
+    const handleNewChat = () => {
+      resetChat();
+      hasInitialMessageSent.current = false; // Reset the flag for initial messages
+    };
+
+    window.addEventListener('newChatStarted', handleNewChat);
+    
+    return () => {
+      window.removeEventListener('newChatStarted', handleNewChat);
+    };
+  }, [resetChat]);
 
   return (
     <div className="h-full flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl">
@@ -48,7 +49,7 @@ export default function RecChat() {
           className="text-xl font-bold text-white text-center"
           style={{ fontFamily: "var(--font-zen-dots)" }}
         >
-          Chat Central
+          Chat
         </h2>
       </div>
 
@@ -84,7 +85,9 @@ export default function RecChat() {
         {loading && (
           <div className="text-left mb-3">
             <div className="inline-block bg-white/20 text-white px-4 py-2 rounded-lg">
-              <p className="text-sm">Escribiendo...</p>
+              <p className="text-sm">
+                Thinking...
+              </p>
             </div>
           </div>
         )}
@@ -96,7 +99,7 @@ export default function RecChat() {
           <input
             type="text"
             className="flex-1 rounded-md border border-white/20 bg-transparent px-4 py-2 text-white placeholder:text-white/50 focus:border-blue-500 focus:outline-none"
-            placeholder="Escribe tu mensaje..."
+            placeholder="Ask me anything..."
             value={currentText}
             onChange={(e) => setCurrentText(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -107,7 +110,7 @@ export default function RecChat() {
             disabled={loading || !currentText.trim()}
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "..." : "Enviar"}
+            {loading ? "..." : "Send"}
           </button>
         </div>
       </div>

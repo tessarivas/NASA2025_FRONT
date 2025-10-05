@@ -1,6 +1,6 @@
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { useFavorites } from '../../../hooks/useFavorites';
-import { Clock, Download, Star, LogOut, ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Heart, X } from 'lucide-react';
+import { Clock, Download, Star, LogOut, ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Heart, X, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { historyAPI, favoritesAPI } from '../../../services/api';
@@ -49,6 +49,17 @@ export default function RecLeft({ onMinimizeChange }) {
 
   const handleBackToMenu = () => {
     setCurrentView('menu');
+  };
+
+  const handleNewChat = () => {
+    // Limpiar el historical_id para crear un nuevo chat
+    localStorage.removeItem('historical_id');
+    
+    // Disparar un evento personalizado para que el chat se resetee
+    const newChatEvent = new CustomEvent('newChatStarted');
+    window.dispatchEvent(newChatEvent);
+    
+    console.log('Starting new chat - historical_id cleared');
   };
 
   // Render history list
@@ -255,6 +266,22 @@ export default function RecLeft({ onMinimizeChange }) {
         ) : (
           /* Default Menu View */
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 h-full animate-fadeIn">
+            {/* New Chat */}
+            <button 
+              onClick={handleNewChat}
+              className="w-full h-14 rounded-xl bg-green-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-green-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
+            >
+              <div className="flex items-center gap-3 pl-4">
+                <Plus className="w-5 h-5 text-green-400 flex-shrink-0 transition-all duration-200" />
+                <span 
+                  className="text-white text-sm font-medium tracking-wide transition-all duration-300 ease-out" 
+                  style={{fontFamily: 'var(--font-space-mono)'}}
+                >
+                  New Chat
+                </span>
+              </div>
+            </button>
+
             {/* History */}
             <button 
               onClick={() => handleViewChange('history')}
