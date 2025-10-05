@@ -7,23 +7,134 @@ import {
   RadialBarChart,
   ResponsiveContainer
 } from "recharts"
+import { useMemo } from "react"
 
-const chartData = [
-  { name: "posts", value: 1247, total: 1500, fill: "rgba(255, 107, 53, 0.7)" },
-]
+// Función para procesar artículos y generar datos del radial chart
+function processRadialData(articles) {
+  if (!articles || articles.length === 0) {
+    // Datos por defecto si no hay artículos
+    return {
+      data: [{ name: "research", value: 156, total: 200, fill: "rgba(255, 107, 53)" }],
+      category: "Space Research",
+      description: "Sample research articles"
+    };
+  }
 
-export function PostsRadialChart() {
-  const percentage = Math.round((chartData[0].value / chartData[0].total) * 100);
+  // Mapear tags a categorías conocidas
+  const tagMapping = {
+    'microgravity': {
+      keywords: ['microgravity', 'zero gravity', 'weightlessness', 'micro-gravity'],
+      label: 'Microgravity Studies',
+      color: 'rgba(0, 184, 235, 0.7)',
+      target: 100
+    },
+    'biology': {
+      keywords: ['biology', 'organisms', 'cells', 'genetics', 'dna', 'molecular', 'cellular'],
+      label: 'Space Biology',
+      color: 'rgba(155, 89, 182, 0.7)',
+      target: 150
+    },
+    'agriculture': {
+      keywords: ['agriculture', 'plants', 'photosynthesis', 'crops', 'food', 'botanical'],
+      label: 'Space Agriculture',
+      color: 'rgba(0, 212, 170, 0.7)',
+      target: 80
+    },
+    'radiation': {
+      keywords: ['radiation', 'cosmic rays', 'space radiation', 'solar', 'ionizing'],
+      label: 'Radiation Research',
+      color: 'rgba(255, 107, 53, 0.7)',
+      target: 120
+    },
+    'physiology': {
+      keywords: ['physiology', 'human', 'medical', 'health', 'physiological'],
+      label: 'Human Physiology',
+      color: 'rgba(231, 76, 60, 0.7)',
+      target: 90
+    },
+    'materials': {
+      keywords: ['materials', 'crystal', 'manufacturing', 'processing'],
+      label: 'Materials Science',
+      color: 'rgba(243, 156, 18, 0.7)',
+      target: 60
+    }
+  };
+
+  // Función para categorizar una tag
+  function categorizeTag(tag) {
+    const lowerTag = tag.toLowerCase().trim();
+    for (const [category, config] of Object.entries(tagMapping)) {
+      if (config.keywords.some(keyword => lowerTag.includes(keyword) || keyword.includes(lowerTag))) {
+        return category;
+      }
+    }
+    return null;
+  }
+
+  // Contar artículos por categoría
+  const categoryCounts = {};
+  
+  articles.forEach(article => {
+    (article.tags || []).forEach(tag => {
+      const category = categorizeTag(tag);
+      if (category) {
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+      }
+    });
+  });
+
+  console.log("📊 Radial Chart - Conteo por categoría:", categoryCounts);
+
+  // Encontrar la categoría con más artículos
+  const topCategory = Object.entries(categoryCounts)
+    .sort(([,a], [,b]) => b - a)[0];
+
+  if (!topCategory) {
+    // Si no hay categorías, usar datos por defecto
+    return {
+      data: [{ name: "articles", value: articles.length, total: articles.length + 20, fill: "rgba(255, 107, 53, 0.7)" }],
+      category: "Research Articles",
+      description: `${articles.length} articles analyzed`
+    };
+  }
+
+  const [categoryKey, count] = topCategory;
+  const categoryConfig = tagMapping[categoryKey];
+  const target = Math.max(categoryConfig.target, count + 10); // Target dinámico
+
+  return {
+    data: [{
+      name: categoryKey,
+      value: count,
+      total: target,
+      fill: categoryConfig.color
+    }],
+    category: categoryConfig.label,
+    description: `Most researched topic`,
+    percentage: Math.round((count / target) * 100),
+    growth: calculateGrowth(articles, categoryKey),
+    totalArticles: articles.length
+  };
+}
+
+export function ResearchProgressRadialChart({ articles = [] }) {
+  // Procesar datos de artículos
+  const chartInfo = useMemo(() => processRadialData(articles), [articles]);
+  
+  const { data, category, description, percentage, growth, totalArticles } = chartInfo;
 
   return (
     <div className="w-full h-full flex flex-col bg-gradient-to-b from-navy-blue/20 to-black/40 backdrop-blur-sm rounded-xl border border-white/20 shadow-xl overflow-hidden">
       {/* Header */}
       <div className="p-3 pb-2">
-        <h3 className="text-sm font-bold text-white mb-1" style={{fontFamily: 'var(--font-zen-dots)'}}>
-          Research Posts Progress
+        <h3 className="text-sm font-bold text-white" style={{fontFamily: 'var(--font-zen-dots)'}}>
+          Research Focus
         </h3>
-        <p className="text-white/70 text-xs" style={{fontFamily: 'var(--font-space-mono)'}}>
-          Published articles this year
+        <p className="text-white/70 text-xs mb-1" style={{fontFamily: 'var(--font-space-mono)'}}>
+          {articles.length > 0 
+            ? `${totalArticles} articles analyzed`
+            : description
+          }
         </p>
       </div>
 
@@ -31,16 +142,16 @@ export function PostsRadialChart() {
       <div className="flex-1 flex items-center justify-center px-3">
         <ResponsiveContainer width="100%" height="150%">
           <RadialBarChart
-            data={chartData}
+            data={data}
             startAngle={90}
             endAngle={-270}
             innerRadius="60%"
             outerRadius="90%"
           >
             <defs>
-              <linearGradient id="orangeGradient" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="rgba(255, 107, 53, 0.8)" />
-                <stop offset="100%" stopColor="rgba(255, 107, 53, 0.4)" />
+              <linearGradient id="dynamicGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={data[0].fill} />
+                <stop offset="100%" stopColor={data[0].fill.replace('0.7', '0.4')} />
               </linearGradient>
             </defs>
             <PolarGrid
@@ -53,7 +164,7 @@ export function PostsRadialChart() {
               dataKey="value" 
               background={{ fill: "rgba(255,255,255,0.05)" }}
               cornerRadius={10}
-              fill="url(#orangeGradient)"
+              fill="url(#dynamicGradient)"
             />
             <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
               <Label
@@ -73,7 +184,7 @@ export function PostsRadialChart() {
                           fill="white"
                           style={{fontFamily: 'var(--font-zen-dots)'}}
                         >
-                          {chartData[0].value.toLocaleString()}
+                          {data[0].value}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
@@ -82,7 +193,7 @@ export function PostsRadialChart() {
                           fill="rgba(255,255,255,0.7)"
                           style={{fontFamily: 'var(--font-space-mono)'}}
                         >
-                          Posts Published
+                          Articles
                         </tspan>
                       </text>
                     )
@@ -95,20 +206,15 @@ export function PostsRadialChart() {
       </div>
 
       {/* Footer */}
-      <div className="p-3 pt-2">
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-3 w-3 text-green-400" />
-            <span className="text-white font-medium">+12.5% vs target</span>
-          </div>
-          <span className="text-white/60">{percentage}% Complete</span>
-        </div>
-        <div className="text-white/50 text-xs mt-1" style={{fontFamily: 'var(--font-space-mono)'}}>
-          Target: {chartData[0].total.toLocaleString()} posts
+      <div className="p-3 pt-2 items-center">
+        <div className="mt-1.5 flex items-center justify-center">
+          <h4 className="text-white text-sm bg-orange-400/20 p-2 px-3 border border-orange-400 rounded-xl font-semibold truncate" style={{fontFamily: 'var(--font-space-mono)'}}>
+            {category}
+          </h4>
         </div>
       </div>
     </div>
   )
 }
 
-export default PostsRadialChart;
+export default ResearchProgressRadialChart;

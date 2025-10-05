@@ -13,13 +13,13 @@ const chartOptions = [
   },
   {
     id: 'posts',
-    name: 'Posts Progress',
+    name: 'Research Focus',
     icon: BarChart3,
     component: PostsRadialChart
   },
   {
     id: 'researchers',
-    name: 'Researchers',
+    name: 'Popular Topics',
     icon: Users,
     component: ResearchersBarChart
   }
