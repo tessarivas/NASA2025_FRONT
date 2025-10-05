@@ -104,7 +104,7 @@ export default function Article({ articles }) {
                                 className="text-left w-full group/title"
                             >
                                 <h3
-                                    className="text-white font-bold text-md mb-1 leading-snug pr-8 group-hover/title:text-blue-300 transition-colors duration-200 flex items-start gap-1"
+                                    className="text-white font-bold text-sm mb-1 leading-snug pr-8"
                                     style={{ fontFamily: 'Space Mono, monospace' }}
                                 >
                                     {article.title}
@@ -193,10 +193,10 @@ export default function Article({ articles }) {
 
             {/* Botón Ver más / Ver menos */}
             {hasMore && (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-3 flex justify-center">
                     <button
                         onClick={() => setShowAll(!showAll)}
-                        className="py-3 px-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.05] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
+                        className="py-2 px-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.05] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
                         style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                         {showAll ? (
