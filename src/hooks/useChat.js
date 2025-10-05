@@ -118,6 +118,8 @@ export function useChat() {
 
 const getMessagesHistorical = async (historicalId) => {
     try {
+        localStorage.setItem("historical_id", historicalId);
+        setMessages([]);
         const response = await historyAPI.getMessagesFromHistorical(historicalId);
         console.log('Mensajes del historial:', response);
         const rawMessages = Array.isArray(response)
@@ -125,7 +127,7 @@ const getMessagesHistorical = async (historicalId) => {
             : response.messages || response.data || [];
 
         const formattedMessages = rawMessages.map(({ rol, message }) => ({
-            sender: rol === "User" ? "User" : "System", // o "System" si aplica
+            sender: rol === "User" ? "User" : "System",
             text: message,
             timestamp: new Date(), // opcional
             }));

@@ -16,9 +16,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 import { useChat } from "@/hooks/useChat";
+import { useChatContext } from "@/context/ChatContext";
 
 export default function RecLeft({ onMinimizeChange }) {
-  const { getMessagesHistorical } = useChat();
+  const { getMessagesHistorical } = useChatContext();
   const { user, logout } = useCurrentUser();
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
@@ -72,8 +73,9 @@ export default function RecLeft({ onMinimizeChange }) {
     setCurrentView("menu");
   };
 
-  const handlerMessageHistory = (historyId) => {
-    getMessagesHistorical(historyId);
+  const handleSelectHistory = (id) => {
+    console.log("🧩 Seleccionando historial:", id);
+    getMessagesHistorical(id);
   };
 
   // Render history list
@@ -108,9 +110,7 @@ export default function RecLeft({ onMinimizeChange }) {
             <div
               key={index}
               className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer"
-              onClick={() => {
-                getMessagesHistorical(item._id);
-              }}
+              onClick={() => handleSelectHistory(item._id)}
             >
               <div className="flex items-start gap-2">
                 <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0 mt-1" />

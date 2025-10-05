@@ -2,7 +2,7 @@ import { useChat } from "@/hooks/useChat";
 import { useEffect } from "react";
 import GradientText from "../GradientText";
 import { Send, Sparkles, Rocket } from "lucide-react";
-import { on } from "events";
+import { useChatContext } from "@/context/ChatContext";
 
 export default function RecChat({ onResponse = () => {} }) {
   // ← SOLO AGREGAR ESTA PROP
@@ -14,7 +14,7 @@ export default function RecChat({ onResponse = () => {} }) {
     loading,
     articles,
     relationshipGraph,
-  } = useChat();
+  } = useChatContext();
 
   useEffect(() => {
     if (relationshipGraph) {
