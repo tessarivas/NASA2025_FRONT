@@ -88,7 +88,7 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
               required
               className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
               style={{ fontFamily: 'Space Mono, monospace' }}
-              placeholder="your@email.com"
+              placeholder="example@email.com"
             />
           </div>
 
