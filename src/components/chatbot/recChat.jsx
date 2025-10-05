@@ -2,6 +2,7 @@ import { useChat } from "@/hooks/useChat";
 import { useEffect, useRef } from "react";
 import GradientText from '../GradientText';
 import { Send, Sparkles, Rocket } from 'lucide-react';
+import Article from './Article';
 
 export default function RecChat({ onResponse, initialMessage }) {
   const {
@@ -158,101 +159,14 @@ export default function RecChat({ onResponse, initialMessage }) {
 
                   {/* Artículos específicos del mensaje (si los hay) */}
                   {message.sender === "system" && message.articles && message.articles.length > 0 && (
-                    <div className="mt-3 max-w-xs lg:max-w-md">
-                      <div className="bg-royal-blue/80 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
+                    <div className="mt-3 w-full">
                         <h4 
-                          className="text-sm font-semibold mb-2 text-blue-200 flex items-center gap-2"
+                          className="text-sm font-semibold mb-2 text-white flex items-center gap-2 pb-2 pt-1"
                           style={{ fontFamily: 'var(--font-space-mono)' }}
                         >
-                          <Sparkles size={14} />
-                          Artículos del Mensaje ({message.articles.length})
+                          Related Articles:
                         </h4>
-                        
-                        <div className="space-y-2">
-                          {message.articles.slice(0, 3).map((article, articleIndex) => (
-                            <div
-                              key={articleIndex}
-                              className="bg-white/10 border border-white/20 rounded-lg p-2 hover:bg-white/15 transition-all duration-200"
-                            >
-                              <h5 
-                                className="text-blue-200 hover:text-blue-100 transition-colors text-xs font-medium leading-tight block"
-                                style={{ fontFamily: 'var(--font-space-mono)' }}
-                              >
-                                {article.title}
-                              </h5>
-                              
-                              {(article.year || article.authors) && (
-                                <div className="flex items-center justify-between text-xs text-white/60 mt-1">
-                                  {article.year && <span>{article.year}</span>}
-                                  {article.authors && article.authors.length > 0 && (
-                                    <span className="truncate ml-2" title={article.authors.join(', ')}>
-                                      {article.authors[0]}{article.authors.length > 1 ? ' et al.' : ''}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                          
-                          {message.articles.length > 3 && (
-                            <div className="text-center">
-                              <span className="text-xs text-blue-300">
-                                +{message.articles.length - 3} more articles
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ARTÍCULOS GLOBALES - Siempre mostrar si existen */}
-                  {message.sender === "system" && articles && articles.length > 0 && (
-                    <div className="mt-3 max-w-xs lg:max-w-md">
-                      <div className="bg-green-900/60 backdrop-blur-sm border border-green-500/30 rounded-lg p-3">
-                        <h4 
-                          className="text-sm font-semibold mb-2 text-green-200 flex items-center gap-2"
-                          style={{ fontFamily: 'var(--font-space-mono)' }}
-                        >
-                          <Sparkles size={14} />
-                          Artículos Globales ({articles.length})
-                        </h4>
-                        
-                        <div className="space-y-2">
-                          {articles.slice(0, 3).map((article, articleIndex) => (
-                            <div
-                              key={articleIndex}
-                              className="bg-white/10 border border-white/20 rounded-lg p-2 hover:bg-white/15 transition-all duration-200"
-                            >
-                              <h5 
-                                className="text-green-200 hover:text-green-100 transition-colors text-xs font-medium leading-tight block"
-                                style={{ fontFamily: 'var(--font-space-mono)' }}
-                              >
-                                {article.title}
-                              </h5>
-                              
-                              {(article.year || article.authors) && (
-                                <div className="flex items-center justify-between text-xs text-white/60 mt-1">
-                                  {article.year && <span>{article.year}</span>}
-                                  {article.authors && article.authors.length > 0 && (
-                                    <span className="truncate ml-2" title={article.authors.join(', ')}>
-                                      {article.authors[0]}{article.authors.length > 1 ? ' et al.' : ''}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                          
-                          {articles.length > 3 && (
-                            <div className="text-center">
-                              <span className="text-xs text-green-300">
-                                +{articles.length - 3} more articles
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                        <Article articles={message.articles} />
                     </div>
                   )}
                 </div>
