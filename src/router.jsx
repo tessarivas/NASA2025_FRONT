@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import DashboardPage from "./pages/dashboard.jsx";
 import HomePage from "./pages/home.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { ChatProvider } from "./context/ChatContext.jsx";
 
 export const router = createBrowserRouter([
   { 
@@ -12,7 +13,9 @@ export const router = createBrowserRouter([
     path: "/dashboard", 
     element: (
       // <ProtectedRoute>
-        <DashboardPage />
+        <ChatProvider>
+          <DashboardPage />
+        </ChatProvider>
       // </ProtectedRoute>
     ) 
   },
