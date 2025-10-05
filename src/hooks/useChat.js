@@ -24,7 +24,7 @@ export function useChat() {
             console.log('Artículos relacionados:', response.related_articles || []);
             const botMsg = { 
                 text: response.answer || response.message || "Respuesta recibida", 
-                sender: "bot", 
+                sender: "System", 
                 timestamp: new Date() 
             };
             setMessages(prev => [...prev, botMsg]);

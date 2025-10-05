@@ -11,11 +11,10 @@ export default function RecChat() {
     articles,
   } = useChat();
 
-
   const handleChat = async () => {
     if (currentText.trim()) {
       console.log("💬 RecChat - Enviando mensaje:", currentText);
-      
+
       // Solo usar el sistema useChat (quitar el fetch duplicado)
       sendMessage(currentText);
       setCurrentText("");
@@ -72,23 +71,26 @@ export default function RecChat() {
               </div>
 
               {/* Muestra los artículos relacionados si existen */}
-              {articles.map((article, idx) => (
-                <div
-                  key={idx}
-                  className="mt-2 bg-blue-700 p-3 rounded-lg inline-block text-left max-w-xs lg:max-w-md"
-                >
-                  <h4 className="text-sm font-semibold mb-1">
-                    Artículos relacionados:
-                  </h4>
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {article.title}
-                  </a>
-                </div>
-              ))}
+
+              {message.sender === "System"
+                ? articles.map((article, idx) => (
+                    <div
+                      key={idx}
+                      className="mt-2 bg-blue-700 p-3 rounded-lg inline-block text-left max-w-xs lg:max-w-md"
+                    >
+                      <h4 className="text-sm font-semibold mb-1">
+                        Artículos relacionados:
+                      </h4>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {article.title}
+                      </a>
+                    </div>
+                  ))
+                : null}
             </div>
           ))
         )}
