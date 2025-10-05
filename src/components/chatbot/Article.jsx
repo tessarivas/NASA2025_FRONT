@@ -7,6 +7,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 export default function Article({ articles }) {
     const [showAll, setShowAll] = useState(false);
+    const [clickedArticle, setClickedArticle] = useState(null);
     const { user } = useCurrentUser();
     const { addToFavorites, removeFromFavorites, isAddingToFavorites, isRemovingFromFavorites } = useFavorites();
 
@@ -31,6 +32,10 @@ export default function Article({ articles }) {
         if (!user?._id) {
             return;
         }
+
+        // Marcar visualmente cuál estrella fue clickeada
+        setClickedArticle(article.title);
+        setTimeout(() => setClickedArticle(null), 800);
 
         const isFavorited = isArticleFavorited(article);
 
@@ -71,6 +76,7 @@ export default function Article({ articles }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 cursor-pointer">
                 {displayedArticles.map((article, idx) => {
                     const isFavorited = isArticleFavorited(article);
+                    const isThisArticleClicked = clickedArticle === article.title;
                     
                     return (
                         <div
@@ -85,7 +91,7 @@ export default function Article({ articles }) {
                                     e.stopPropagation();
                                     toggleFavorite(article);
                                 }}
-                                disabled={isLoading}
+                                disabled={isThisArticleClicked}
                                 className="absolute top-3 right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 
                                 transition-all duration-200 hover:scale-110 group cursor-pointer disabled:opacity-50"
                                 title={isFavorited ? "Remove from favorites" : "Add to favorites"}
@@ -96,7 +102,7 @@ export default function Article({ articles }) {
                                         isFavorited 
                                             ? 'fill-[#F63564] text-[#F63564]' 
                                             : 'text-white/60 group-hover:text-[#F63564]'
-                                    } ${isLoading ? 'animate-pulse' : ''}`}
+                                    } ${isThisArticleClicked ? 'animate-pulse' : ''}`}
                                 />
                             </button>
 

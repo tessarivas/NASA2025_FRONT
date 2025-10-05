@@ -13,14 +13,16 @@ import {
   X,
   Plus,
   Check,
+  Lightbulb,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 import { useChatContext } from "@/context/ChatContext";
+import PromptSuggestions from "./PromptSuggestions"; // ← IMPORT NUEVO
 
 export default function RecLeft({ onMinimizeChange }) {
-  const { getMessagesHistorical, resetChat } = useChatContext();
+  const { getMessagesHistorical, resetChat, sendMessage } = useChatContext(); // ← Ya tienes sendMessage aquí
   const { user, logout } = useCurrentUser();
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
@@ -133,6 +135,16 @@ export default function RecLeft({ onMinimizeChange }) {
   const cancelDeleteHistory = (event) => {
     event.stopPropagation();
     setDeletingHistoryId(null);
+  };
+
+  // Función para manejar prompts automáticos - NUEVA
+  const handleSendPrompt = (prompt) => {
+    console.log("📝 Enviando prompt sugerido:", prompt);
+    
+    // Enviar el mensaje usando el contexto (que ya tienes importado)
+    if (sendMessage) {
+      sendMessage(prompt);
+    }
   };
 
   // Render history list
@@ -278,13 +290,13 @@ export default function RecLeft({ onMinimizeChange }) {
             return (
               <div
                 key={index}
-                className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors group"
+                className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 cursor-pointer hover:bg-blue-900/60 transition-colors group"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
                     <button
                       onClick={handleArticleClick}
-                      className="text-left w-full group/title"
+                      className="text-left w-full group/title cursor-pointer "
                       title={article.title} // Tooltip with full title
                     >
                       <p
@@ -343,6 +355,13 @@ export default function RecLeft({ onMinimizeChange }) {
         {/* Minimized Menu Icons */}
         <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
           <button
+            onClick={handleNewChat}
+            className="w-full h-10 rounded-lg bg-green-900/40 backdrop-blur-sm shadow-md hover:bg-green-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
+            title="New Chat"
+          >
+            <Plus className="w-5 h-5 text-green-400 transition-all duration-200" />   
+          </button>
+          <button
             onClick={() => handleViewChange("history")}
             className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
             title="History"
@@ -355,6 +374,13 @@ export default function RecLeft({ onMinimizeChange }) {
             title="Favorites"
           >
             <Star className="w-5 h-5 text-orange-400 transition-all duration-200" />
+          </button>
+          <button
+            onClick={() => handleViewChange("recommendations")}
+            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
+            title="Recommendations"
+          >
+            <Lightbulb className="w-5 h-5 text-purple-400 transition-all duration-200" />
           </button>
         </div>
 
@@ -374,7 +400,7 @@ export default function RecLeft({ onMinimizeChange }) {
 
   return (
     <div className="h-full flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl overflow-hidden transition-all duration-400 ease-out w-full">
-      {/* User Profile Card */}
+      {/* User Profile Card - sin cambios */}
       <div className="m-4 p-4 rounded-2xl bg-blue-900/40 backdrop-blur-md shadow-xl transition-all duration-400 ease-out">
         <div className="flex items-center gap-3">
           {/* Profile Picture */}
@@ -423,7 +449,7 @@ export default function RecLeft({ onMinimizeChange }) {
         ) : (
           /* Default Menu View */
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 h-full animate-fadeIn">
-            {/* New Chat */}
+            {/* New Chat - sin cambios */}
             <button 
               onClick={handleNewChat}
               className="w-full h-14 rounded-xl bg-green-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-green-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
@@ -439,7 +465,7 @@ export default function RecLeft({ onMinimizeChange }) {
               </div>
             </button>
 
-            {/* History */}
+            {/* History - sin cambios */}
             <button
               onClick={() => handleViewChange("history")}
               className="w-full h-14 rounded-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
@@ -455,7 +481,7 @@ export default function RecLeft({ onMinimizeChange }) {
               </div>
             </button>
 
-            {/* Favorites */}
+            {/* Favorites - sin cambios */}
             <button
               onClick={() => handleViewChange("favorites")}
               className="w-full h-14 rounded-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
@@ -470,11 +496,14 @@ export default function RecLeft({ onMinimizeChange }) {
                 </span>
               </div>
             </button>
+
+            {/* ← NUEVO COMPONENTE DE SUGERENCIAS - SOLO ESTA LÍNEA ES NUEVA */}
+            <PromptSuggestions onSendPrompt={handleSendPrompt} />
           </div>
         )}
       </div>
 
-      {/* Minimize/Expand Button */}
+      {/* Minimize/Expand Button - sin cambios */}
       <div className="border-t border-white/10 p-4 transition-all duration-400 ease-out">
         <button
           onClick={toggleMinimize}
