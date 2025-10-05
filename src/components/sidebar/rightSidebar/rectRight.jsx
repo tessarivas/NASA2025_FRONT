@@ -61,7 +61,7 @@ const RectRight = memo(function RectRight({ graphData = null }) {
       <GraphModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal}
-        graphData={graphData} // ← Asegurar que se pasen los datos más recientes
+        graphData={graphData}
       />
     </>
   );
