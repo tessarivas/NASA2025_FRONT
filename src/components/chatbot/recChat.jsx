@@ -17,6 +17,22 @@ export default function RecChat({ onResponse, initialMessage }) {
   const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
 
+  // DEBUG: Verificar qué llega desde useChat
+  useEffect(() => {
+    console.log("🔍 DEBUG - Messages:", messages);
+    console.log("🔍 DEBUG - Articles globales:", articles);
+    
+    // Verificar cada mensaje individual
+    messages.forEach((msg, index) => {
+      console.log(`🔍 Mensaje ${index}:`, {
+        sender: msg.sender,
+        hasArticles: !!msg.articles,
+        articlesLength: msg.articles?.length || 0,
+        articles: msg.articles
+      });
+    });
+  }, [messages, articles]);
+
   // Send initial message if provided (only once and only if no existing chat)
   useEffect(() => {
     const existingHistoricalId = localStorage.getItem('historical_id');
@@ -97,7 +113,7 @@ export default function RecChat({ onResponse, initialMessage }) {
       </div>
 
       {/* Messages Section - Con scroll personalizado */}
-      <div className="absolute top-16 left-0 right-0 bottom-48 overflow-hidden">
+      <div className="absolute top-16 left-0 right-0 bottom-40 overflow-hidden">
         <div className="h-full overflow-y-auto p-4 chat-scroll">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
@@ -149,7 +165,7 @@ export default function RecChat({ onResponse, initialMessage }) {
                           style={{ fontFamily: 'var(--font-space-mono)' }}
                         >
                           <Sparkles size={14} />
-                          Related Articles ({message.articles.length})
+                          Artículos del Mensaje ({message.articles.length})
                         </h4>
                         
                         <div className="space-y-2">
@@ -190,16 +206,16 @@ export default function RecChat({ onResponse, initialMessage }) {
                     </div>
                   )}
 
-                  {/* MOSTRAR ARTÍCULOS GLOBALES - Para debugging */}
-                  {message.sender === "system" && !message.articles && articles && articles.length > 0 && (
+                  {/* ARTÍCULOS GLOBALES - Siempre mostrar si existen */}
+                  {message.sender === "system" && articles && articles.length > 0 && (
                     <div className="mt-3 max-w-xs lg:max-w-md">
-                      <div className="bg-royal-blue/80 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
+                      <div className="bg-green-900/60 backdrop-blur-sm border border-green-500/30 rounded-lg p-3">
                         <h4 
-                          className="text-sm font-semibold mb-2 text-blue-200 flex items-center gap-2"
+                          className="text-sm font-semibold mb-2 text-green-200 flex items-center gap-2"
                           style={{ fontFamily: 'var(--font-space-mono)' }}
                         >
                           <Sparkles size={14} />
-                          Related Articles ({articles.length})
+                          Artículos Globales ({articles.length})
                         </h4>
                         
                         <div className="space-y-2">
@@ -209,7 +225,7 @@ export default function RecChat({ onResponse, initialMessage }) {
                               className="bg-white/10 border border-white/20 rounded-lg p-2 hover:bg-white/15 transition-all duration-200"
                             >
                               <h5 
-                                className="text-blue-200 hover:text-blue-100 transition-colors text-xs font-medium leading-tight block"
+                                className="text-green-200 hover:text-green-100 transition-colors text-xs font-medium leading-tight block"
                                 style={{ fontFamily: 'var(--font-space-mono)' }}
                               >
                                 {article.title}
@@ -230,7 +246,7 @@ export default function RecChat({ onResponse, initialMessage }) {
                           
                           {articles.length > 3 && (
                             <div className="text-center">
-                              <span className="text-xs text-blue-300">
+                              <span className="text-xs text-green-300">
                                 +{articles.length - 3} more articles
                               </span>
                             </div>
@@ -265,7 +281,7 @@ export default function RecChat({ onResponse, initialMessage }) {
       </div>
 
       {/* Input Section - Posición absoluta bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 p-6 border-t border-white/20 bg-gradient-to-t from-navy-blue/30 to-transparent backdrop-blur-xs z-10">
+      <div className="absolute bottom-0 left-0 right-0 h-40 p-6 border-t border-white/20 bg-gradient-to-t from-navy-blue/30 to-transparent backdrop-blur-xs z-10">
         <div className="flex flex-col gap-3 h-full justify-center">
           {/* Título del input */}
           <div className="text-center">

@@ -36,15 +36,17 @@ export function useChat() {
             setResponseChat(response);
 
             if (response.success) {
-                // Add bot response to messages
+                // Add bot response to messages CON ARTÍCULOS Y RAWDATA
                 const botMsg = { 
                     text: response.response.answer, 
-                    sender: "bot", 
-                    timestamp: new Date() 
+                    sender: "system", // ← CAMBIAR DE "bot" A "system"
+                    timestamp: new Date(),
+                    articles: response.response.related_articles || [], // ← ARTÍCULOS POR MENSAJE
+                    rawData: response.response // ← DATOS COMPLETOS PARA GRAFOS
                 };
                 setMessages(prev => [...prev, botMsg]);
 
-                // Extract and set articles from response
+                // MANTENER artículos globales para backward compatibility
                 if (response.response.related_articles) {
                     setArticles(response.response.related_articles);
                 }
@@ -60,7 +62,7 @@ export function useChat() {
                 // Handle error response
                 const errorMsg = { 
                     text: response.error || "Error processing message", 
-                    sender: "bot", 
+                    sender: "system",
                     timestamp: new Date(),
                     isError: true 
                 };
@@ -72,7 +74,7 @@ export function useChat() {
             // Add error message
             const errorMsg = { 
                 text: "Error sending message", 
-                sender: "bot", 
+                sender: "system",
                 timestamp: new Date(),
                 isError: true 
             };
@@ -87,7 +89,7 @@ export function useChat() {
         setResponseChat(null);
         setCurrentText("");
         setArticles([]);
-        // Clear historical_id from localStorage when starting a new chat
+        // Clear historical_id when starting new chat
         localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
