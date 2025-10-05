@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import GradientText from '../GradientText';
 import { Send, Sparkles, Rocket } from 'lucide-react';
 
-export default function RecChat() {
+export default function RecChat({ onResponse }) { // ← SOLO AGREGAR ESTA PROP
   const {
     messages,
     currentText,
@@ -12,6 +12,12 @@ export default function RecChat() {
     loading,
     articles,
   } = useChat();
+
+  // ← AGREGAR SOLO ESTE useEffect para pasar datos al Dashboard
+  useEffect(() => {
+    // Aquí necesitarías interceptar la respuesta que contiene relationship_graph
+    // y llamar onResponse(responseData) cuando llegue
+  }, []);
 
   const handleChat = async () => {
     if (currentText.trim()) {
