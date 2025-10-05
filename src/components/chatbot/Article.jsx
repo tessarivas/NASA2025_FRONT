@@ -29,19 +29,19 @@ export default function Article({ articles }) {
     return (
         <div className="mt-2 w-full">
             {/* Grid con 3 columnas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 cursor-pointer">
                 {displayedArticles.map((article, idx) => (
                     <div
                         key={idx}
                         className="bg-gradient-to-br from-[#1a1f3a]/20 to-[#0f1320]/80 backdrop-blur-xs 
-                        border-2 border-white/40 rounded-3xl p-4 hover:border-white/60 
+                        border-2 border-white/40 rounded-3xl px-4 py-3 hover:border-white/60 
                         transition-all duration-300 hover:shadow-xl hover:shadow-white/10 hover:scale-[1.02] flex flex-col relative"
                     >
                         {/* Botón de estrella para favoritos */}
                         <button
                             onClick={() => toggleFavorite(idx)}
                             className="absolute top-3 right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 
-                            transition-all duration-200 hover:scale-110 group"
+                            transition-all duration-200 hover:scale-110 group cursor-pointer"
                             title={favorites.has(idx) ? "Remove from favorites" : "Add to favorites"}
                         >
                             <Star 
@@ -56,13 +56,13 @@ export default function Article({ articles }) {
 
                         {/* Título del artículo */}
                         <h3
-                            className="text-white font-bold text-xs mb-4 leading-snug pr-8"
+                            className="text-white font-bold text-md mb-1 leading-snug pr-8"
                             style={{ fontFamily: 'Space Mono, monospace' }}
                         >
                             {article.title}
                         </h3>
 
-                        <div className="space-y-1.5 text-xs">
+                        <div className="space-y-1.0 text-xs">
                             {/* Year */}
                             {article.year && (
                                 <div>
@@ -126,7 +126,7 @@ export default function Article({ articles }) {
                 <div className="mt-6 flex justify-center">
                     <button
                         onClick={() => setShowAll(!showAll)}
-                        className="py-3 px-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.05] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                        className="py-3 px-8 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl font-semibold transition-all duration-300 hover:scale-[1.05] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
                         style={{ fontFamily: 'Space Mono, monospace' }}
                     >
                         {showAll ? (
