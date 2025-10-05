@@ -111,7 +111,7 @@ export const favoritesAPI = {
     return response.json();
   },
 
-  addToFavorites: async (userId, articleId) => {
+  addToFavorites: async (userId, articleData) => {
     const token = localStorage.getItem('token');
     
     const response = await fetch(`${API_URL}/users/${userId}/favorites`, {
@@ -120,7 +120,7 @@ export const favoritesAPI = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ articleId }),
+      body: JSON.stringify(articleData),
     });
 
     if (!response.ok) {
@@ -131,7 +131,7 @@ export const favoritesAPI = {
     return response.json();
   },
 
-  removeFromFavorites: async (userId, articleId) => {
+  removeFromFavorites: async (userId, articleTitle) => {
     const token = localStorage.getItem('token');
     
     const response = await fetch(`${API_URL}/users/${userId}/favorites`, {
@@ -140,7 +140,7 @@ export const favoritesAPI = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ articleId }),
+      body: JSON.stringify({ title: articleTitle }),
     });
 
     if (!response.ok) {

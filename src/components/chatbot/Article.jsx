@@ -21,10 +21,9 @@ export default function Article({ articles }) {
     const displayedArticles = showAll ? articles : articles.slice(0, 3);
     const hasMore = articles.length > 3;
 
-    // Function to generate a unique article ID
-    const generateArticleId = (article) => {
-        // Use title as primary identifier, optionally combined with year for uniqueness
-        return `${article.title}${article.year ? `_${article.year}` : ''}`.replace(/[^a-zA-Z0-9]/g, '_');
+    // Function to check if an article is favorited (by title)
+    const isArticleFavorited = (article) => {
+        return favoritesList.some(fav => fav.title === article.title);
     };
 
     // Function to handle favorite toggle
@@ -34,13 +33,18 @@ export default function Article({ articles }) {
             return;
         }
 
-        const articleId = generateArticleId(article);
-        const isFavorited = favoritesList.includes(articleId);
+        const isFavorited = isArticleFavorited(article);
 
         if (isFavorited) {
-            removeFromFavorites(articleId);
+            removeFromFavorites(article.title);
         } else {
-            addToFavorites(articleId);
+            addToFavorites({
+                title: article.title,
+                year: article.year,
+                authors: article.authors || [],
+                tags: article.tags || [],
+                doi: article.doi
+            });
         }
     };
 
@@ -67,8 +71,7 @@ export default function Article({ articles }) {
             {/* Grid con 3 columnas */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 cursor-pointer">
                 {displayedArticles.map((article, idx) => {
-                    const articleId = generateArticleId(article);
-                    const isFavorited = favoritesList.includes(articleId);
+                    const isFavorited = isArticleFavorited(article);
                     
                     return (
                         <div

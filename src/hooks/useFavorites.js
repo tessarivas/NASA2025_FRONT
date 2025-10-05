@@ -7,7 +7,7 @@ export const useFavorites = () => {
   const queryClient = useQueryClient();
 
   const addToFavoritesMutation = useMutation({
-    mutationFn: ({ articleId }) => favoritesAPI.addToFavorites(user._id, articleId),
+    mutationFn: ({ articleData }) => favoritesAPI.addToFavorites(user._id, articleData),
     onSuccess: () => {
       // Invalidate and refetch favorites
       queryClient.invalidateQueries(['userFavorites', user._id]);
@@ -18,7 +18,7 @@ export const useFavorites = () => {
   });
 
   const removeFromFavoritesMutation = useMutation({
-    mutationFn: ({ articleId }) => favoritesAPI.removeFromFavorites(user._id, articleId),
+    mutationFn: ({ articleTitle }) => favoritesAPI.removeFromFavorites(user._id, articleTitle),
     onSuccess: () => {
       // Invalidate and refetch favorites
       queryClient.invalidateQueries(['userFavorites', user._id]);
@@ -28,20 +28,20 @@ export const useFavorites = () => {
     },
   });
 
-  const addToFavorites = (articleId) => {
+  const addToFavorites = (articleData) => {
     if (!user?._id) {
       console.error('Cannot add to favorites: User ID is not available');
       return;
     }
-    addToFavoritesMutation.mutate({ articleId });
+    addToFavoritesMutation.mutate({ articleData });
   };
 
-  const removeFromFavorites = (articleId) => {
+  const removeFromFavorites = (articleTitle) => {
     if (!user?._id) {
       console.error('Cannot remove from favorites: User ID is not available');
       return;
     }
-    removeFromFavoritesMutation.mutate({ articleId });
+    removeFromFavoritesMutation.mutate({ articleTitle });
   };
 
   return {

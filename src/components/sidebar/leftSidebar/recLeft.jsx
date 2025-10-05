@@ -267,34 +267,60 @@ export default function RecLeft({ onMinimizeChange }) {
         </div>
       ) : favoritesData && favoritesData.length > 0 ? (
         <div className="space-y-2">
-          {favoritesData.map((articleId, index) => (
-            <div
-              key={index}
-              className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-white text-sm font-medium truncate"
-                    style={{ fontFamily: "var(--font-space-mono)" }}
+          {favoritesData.map((article, index) => {
+            // Function to handle article click (open DOI or search)
+            const handleArticleClick = () => {
+              if (article.doi) {
+                window.open(`https://doi.org/${article.doi}`, '_blank');
+              } else {
+                const searchQuery = encodeURIComponent(`"${article.title}"`);
+                window.open(`https://scholar.google.com/scholar?q=${searchQuery}`, '_blank');
+              }
+            };
+
+            return (
+              <div
+                key={index}
+                className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors group"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <button
+                      onClick={handleArticleClick}
+                      className="text-left w-full group/title"
+                      title={article.title} // Tooltip with full title
+                    >
+                      <p
+                        className="text-white text-sm font-medium truncate group-hover/title:text-blue-300 transition-colors"
+                        style={{ fontFamily: "var(--font-space-mono)" }}
+                      >
+                        {article.title}
+                      </p>
+                    </button>
+                    {article.year && (
+                      <p
+                        className="text-white/60 text-xs mt-1"
+                        style={{ fontFamily: "var(--font-space-mono)" }}
+                      >
+                        {article.year}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromFavorites(article.title);
+                    }}
+                    disabled={isRemovingFromFavorites}
+                    className="p-1 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 cursor-pointer"
+                    title="Remove from favorites"
                   >
-                    Article {articleId}
-                  </p>
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeFromFavorites(articleId);
-                  }}
-                  disabled={isRemovingFromFavorites}
-                  className="p-1 rounded hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 cursor-pointer"
-                  title="Remove from favorites"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="flex items-center justify-center py-8">
