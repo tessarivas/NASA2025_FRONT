@@ -17,6 +17,30 @@ export default function RecChat() {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentText.trim()) return;
+
+    try {
+      const response = await fetch("/vertex-ai/structured-simple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: currentText }),
+      });
+
+      const data = await response.json();
+
+      // Llamar a la función del padre para pasar los datos
+      if (onResponse && data.relationship_graph) {
+        onResponse(data);
+      }
+
+      setCurrentText("");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl">
       <div className="p-4 border-b border-white/20">

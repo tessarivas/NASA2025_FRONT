@@ -3,10 +3,18 @@ import StarBorder from '../../UI/starBorder.jsx';
 import GraphModal from '../rightSidebar/GraphModal.jsx';
 import ChartSelector from './charts.jsx';
 import { Expand } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function RectRight() {
+export default function RectRight({ graphData = null }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localGraphData, setLocalGraphData] = useState(null);
+
+  // Actualizar datos locales cuando lleguen nuevos datos
+  useEffect(() => {
+    if (graphData) {
+      setLocalGraphData(graphData);
+    }
+  }, [graphData]);
 
   const handleViewLarge = () => {
     setIsModalOpen(true);
@@ -27,7 +35,7 @@ export default function RectRight() {
         {/* Panel inferior con grafo */}
         <div className="flex-1 flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-sm shadow-xl">
           <div className="flex-1 px-2 pt-2">
-            <GraphViewer />
+            <GraphViewer graphData={localGraphData} />
           </div>
           <div className="p-2">
             <StarBorder
@@ -52,7 +60,11 @@ export default function RectRight() {
         </div>
       </div>
 
-      <GraphModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <GraphModal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal}
+        graphData={localGraphData}
+      />
     </>
   )
 }

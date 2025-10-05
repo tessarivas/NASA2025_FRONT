@@ -12,9 +12,17 @@ import { useState } from "react";
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
+  const [graphData, setGraphData] = useState(null); // Estado para datos del grafo
 
   const handleMinimizeChange = (isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
+  };
+
+  // Función para recibir datos del chat
+  const handleChatResponse = (responseData) => {
+    if (responseData?.relationship_graph) {
+      setGraphData(responseData.relationship_graph);
+    }
   };
 
   return (
@@ -81,7 +89,7 @@ export default function Dashboard() {
             minSize={30}
           >
             <div className="h-full">
-              <RecChat />
+              <RecChat onResponse={handleChatResponse} />
             </div>
           </ResizablePanel>
 
@@ -94,7 +102,7 @@ export default function Dashboard() {
             maxSize={35}
           >
             <div className="h-full">
-              <RectRight />
+              <RectRight graphData={graphData} />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
