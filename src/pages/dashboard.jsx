@@ -78,9 +78,9 @@ export default function Dashboard() {
         >
           {/* Menu Izquierdo */}
           <ResizablePanel 
-            defaultSize={isLeftSidebarMinimized ? 8 : 25}
-            minSize={isLeftSidebarMinimized ? 8 : 20} 
-            maxSize={isLeftSidebarMinimized ? 8 : 40}
+            defaultSize={isLeftSidebarMinimized ? 6 : 25}
+            minSize={isLeftSidebarMinimized ? 6 : 20} 
+            maxSize={isLeftSidebarMinimized ? 6 : 40}
           >
             <div className="h-full">
               <RecLeft onMinimizeChange={handleMinimizeChange} />

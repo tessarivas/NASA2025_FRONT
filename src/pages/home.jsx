@@ -63,9 +63,13 @@ export default function HomePage() {
             <nav className="absolute top-0 left-0 right-0 z-10 p-6">
                 <div className="flex justify-between items-center">
                     {/* Logo o título */}
-                    <div className="text-white font-bold text-xl" style={{ fontFamily: 'Zen Dots' }}>
+                    <button 
+                        onClick={handleBackToWelcome}
+                        className="text-white font-bold text-xl select-none hover:text-blue transition-colors duration-300 cursor-pointer" 
+                        style={{ fontFamily: 'Zen Dots' }}
+                    >
                         NASA Explorer
-                    </div>
+                    </button>
 
                     {/* Navigation Links */}
                     <div className="flex items-center gap-4">
