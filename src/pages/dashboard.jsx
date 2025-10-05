@@ -43,12 +43,12 @@ export default function Dashboard() {
           cursorSize={100}
           isViscous={false}
           viscous={30}
-          iterationsViscous={32}
-          iterationsPoisson={32}
-          resolution={0.5}
+          iterationsViscous={8}
+          iterationsPoisson={8}
+          resolution={0.25}
           isBounce={false}
           autoDemo={true}
-          autoSpeed={0.2}
+          autoSpeed={0.05}
           autoIntensity={2.5}
           takeoverDuration={0.25}
           autoResumeDelay={3000}
@@ -60,7 +60,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-5 pointer-events-none">
         <Particles
           particleColors={['#ffffff', '#ffffff']}
-          particleCount={500}
+          particleCount={100}
           particleSpread={10}
           speed={0.1}
           particleBaseSize={80}
