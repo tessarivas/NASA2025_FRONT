@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-const GraphViewer = ({ graphData = null }) => { // Agregar prop graphData
+const GraphViewer = ({ graphData = null }) => {
   const containerRef = useRef(null);
+
+  console.log('📊 GraphViewer - Props recibidas, graphData:', graphData);
 
   // Datos de fallback si no se proporcionan datos
   const defaultGraphData = {
@@ -35,10 +37,21 @@ const GraphViewer = ({ graphData = null }) => { // Agregar prop graphData
 
   // Usar datos proporcionados o datos por defecto
   const currentGraphData = graphData || defaultGraphData;
+  
+  console.log('🎨 GraphViewer - Datos que se van a usar:', currentGraphData);
+  console.log('🔹 GraphViewer - ¿Usando datos reales?', !!graphData);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    console.log('⚡ GraphViewer - useEffect ejecutado');
+    console.log('📥 GraphViewer - currentGraphData en useEffect:', currentGraphData);
+    
+    if (!containerRef.current) {
+      console.log('❌ GraphViewer - containerRef.current es null');
+      return;
+    }
 
+    console.log('🚀 GraphViewer - Iniciando renderizado del grafo...');
+    
     // Limpiar contenedor
     d3.select(containerRef.current).selectAll("*").remove();
 

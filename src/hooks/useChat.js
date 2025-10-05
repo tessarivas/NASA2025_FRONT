@@ -8,6 +8,7 @@ export function useChat() {
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
     const [currentText, setCurrentText] = useState("");
+    const [articles, setArticles] = useState([]);
 
     const sendMessage = async (userMessage) => {
         // Add user message immediately
@@ -42,6 +43,11 @@ export function useChat() {
                     timestamp: new Date() 
                 };
                 setMessages(prev => [...prev, botMsg]);
+
+                // Extract and set articles from response
+                if (response.response.related_articles) {
+                    setArticles(response.response.related_articles);
+                }
 
                 // Update localStorage with historical_id (for new chats or existing ones)
                 if (response.historical_id) {
@@ -80,6 +86,7 @@ export function useChat() {
         setMessages([]);
         setResponseChat(null);
         setCurrentText("");
+        setArticles([]);
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
     };
@@ -92,6 +99,7 @@ export function useChat() {
         responseChat,
         currentText,
         setCurrentText,
-        resetChat
+        resetChat,
+        articles
     };
 }

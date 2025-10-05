@@ -1,26 +1,46 @@
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { useFavorites } from '../../../hooks/useFavorites';
-import { Clock, Download, Star, LogOut, ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Heart, X, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { historyAPI, favoritesAPI } from '../../../services/api';
+import { useCurrentUser } from "../../../hooks/useCurrentUser";
+import { useFavorites } from "../../../hooks/useFavorites";
+import {
+  Clock,
+  Download,
+  Star,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  MessageSquare,
+  Heart,
+  X,
+  Plus,
+} from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { historyAPI, favoritesAPI } from "../../../services/api";
 
 export default function RecLeft({ onMinimizeChange }) {
   const { user, logout } = useCurrentUser();
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
-  const [currentView, setCurrentView] = useState('menu'); // 'menu', 'history', 'favorites'
+  const [currentView, setCurrentView] = useState("menu"); // 'menu', 'history', 'favorites'
 
-  const { data: historyData, isLoading: historyLoading, error: historyError } = useQuery({
-    queryKey: ['userHistory'],
+  const {
+    data: historyData,
+    isLoading: historyLoading,
+    error: historyError,
+  } = useQuery({
+    queryKey: ["userHistory"],
     queryFn: historyAPI.getUserHistory,
-    enabled: currentView === 'history',
+    enabled: !!user?._id, // Always fetch when user is available
   });
 
-  const { data: favoritesData, isLoading: favoritesLoading, error: favoritesError } = useQuery({
-    queryKey: ['userFavorites', user?._id],
+  const {
+    data: favoritesData,
+    isLoading: favoritesLoading,
+    error: favoritesError,
+  } = useQuery({
+    queryKey: ["userFavorites", user?._id],
     queryFn: () => favoritesAPI.getUserFavorites(user._id),
-    enabled: currentView === 'favorites' && !!user?._id,
+    enabled: currentView === "favorites" && !!user?._id,
   });
 
   const toggleMinimize = () => {
@@ -28,7 +48,7 @@ export default function RecLeft({ onMinimizeChange }) {
     setIsMinimized(newMinimizedState);
     // Reset to menu view when minimizing
     if (newMinimizedState) {
-      setCurrentView('menu');
+      setCurrentView("menu");
     }
     // Notificar al componente padre sobre el cambio
     if (onMinimizeChange) {
@@ -48,7 +68,7 @@ export default function RecLeft({ onMinimizeChange }) {
   };
 
   const handleBackToMenu = () => {
-    setCurrentView('menu');
+    setCurrentView("menu");
   };
 
   const handleNewChat = () => {
@@ -66,15 +86,20 @@ export default function RecLeft({ onMinimizeChange }) {
   const renderHistoryList = () => (
     <div className="flex-1 overflow-y-auto px-4 pb-4">
       <div className="flex items-center gap-2 mb-4">
-        <button 
+        <button
           onClick={handleBackToMenu}
           className="text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>History</h3>
+        <h3
+          className="text-white font-medium"
+          style={{ fontFamily: "var(--font-space-mono)" }}
+        >
+          History
+        </h3>
       </div>
-      
+
       {historyLoading ? (
         <div className="flex items-center justify-center py-8">
           <div className="text-white/60">Loading history...</div>
@@ -86,12 +111,18 @@ export default function RecLeft({ onMinimizeChange }) {
       ) : historyData && historyData.length > 0 ? (
         <div className="space-y-2">
           {historyData.map((item, index) => (
-            <div key={index} className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer">
+            <div
+              key={index}
+              className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer"
+            >
               <div className="flex items-start gap-2">
                 <MessageSquare className="w-4 h-4 text-orange-400 flex-shrink-0 mt-1" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate" style={{fontFamily: 'var(--font-space-mono)'}}>
-                    {item.title || item.query || 'Conversation'}
+                  <p
+                    className="text-white text-sm font-medium truncate"
+                    style={{ fontFamily: "var(--font-space-mono)" }}
+                  >
+                    {item.title || item.query || "Conversation"}
                   </p>
                   <p className="text-white/60 text-xs mt-1">
                     {new Date(item.createdAt || item.date).toLocaleDateString()}
@@ -116,15 +147,20 @@ export default function RecLeft({ onMinimizeChange }) {
   const renderFavoritesList = () => (
     <div className="flex-1 overflow-y-auto px-4 pb-4">
       <div className="flex items-center gap-2 mb-4">
-        <button 
+        <button
           onClick={handleBackToMenu}
           className="text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h3 className="text-white font-medium" style={{fontFamily: 'var(--font-space-mono)'}}>Favorites</h3>
+        <h3
+          className="text-white font-medium"
+          style={{ fontFamily: "var(--font-space-mono)" }}
+        >
+          Favorites
+        </h3>
       </div>
-      
+
       {favoritesLoading ? (
         <div className="flex items-center justify-center py-8">
           <div className="text-white/60">Loading favorites...</div>
@@ -136,10 +172,16 @@ export default function RecLeft({ onMinimizeChange }) {
       ) : favoritesData && favoritesData.length > 0 ? (
         <div className="space-y-2">
           {favoritesData.map((articleId, index) => (
-            <div key={index} className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors">
+            <div
+              key={index}
+              className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors"
+            >
               <div className="flex items-center gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate" style={{fontFamily: 'var(--font-space-mono)'}}>
+                  <p
+                    className="text-white text-sm font-medium truncate"
+                    style={{ fontFamily: "var(--font-space-mono)" }}
+                  >
                     Article {articleId}
                   </p>
                 </div>
@@ -175,22 +217,22 @@ export default function RecLeft({ onMinimizeChange }) {
         {/* Minimized User Profile */}
         <div className="m-2 rounded-xl bg-blue-900/40 backdrop-blur-md p-1 shadow-xl flex items-center justify-center transition-all duration-400 ease-out">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 via-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-xl transition-all duration-400 ease-out">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
         </div>
 
         {/* Minimized Menu Icons */}
         <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
-          <button 
-            onClick={() => handleViewChange('history')}
-            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95" 
+          <button
+            onClick={() => handleViewChange("history")}
+            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
             title="History"
           >
             <Clock className="w-5 h-5 text-orange-400 transition-all duration-200" />
           </button>
-          <button 
-            onClick={() => handleViewChange('favorites')}
-            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95" 
+          <button
+            onClick={() => handleViewChange("favorites")}
+            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
             title="Favorites"
           >
             <Star className="w-5 h-5 text-orange-400 transition-all duration-200" />
@@ -199,7 +241,7 @@ export default function RecLeft({ onMinimizeChange }) {
 
         {/* Expand Button - Área más grande */}
         <div className="p-1 border-t border-white/10">
-          <button 
+          <button
             onClick={toggleMinimize}
             className="w-full h-12 text-white/60 hover:text-white/80 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transform hover:scale-105 active:scale-95"
             title="Expand Menu"
@@ -255,14 +297,10 @@ export default function RecLeft({ onMinimizeChange }) {
 
       {/* Content based on current view */}
       <div className="flex-1 overflow-hidden transition-all duration-400 ease-out">
-        {currentView === 'history' ? (
-          <div className="h-full animate-fadeIn">
-            {renderHistoryList()}
-          </div>
-        ) : currentView === 'favorites' ? (
-          <div className="h-full animate-fadeIn">
-            {renderFavoritesList()}
-          </div>
+        {currentView === "history" ? (
+          <div className="h-full animate-fadeIn">{renderHistoryList()}</div>
+        ) : currentView === "favorites" ? (
+          <div className="h-full animate-fadeIn">{renderFavoritesList()}</div>
         ) : (
           /* Default Menu View */
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 h-full animate-fadeIn">
@@ -283,15 +321,15 @@ export default function RecLeft({ onMinimizeChange }) {
             </button>
 
             {/* History */}
-            <button 
-              onClick={() => handleViewChange('history')}
+            <button
+              onClick={() => handleViewChange("history")}
               className="w-full h-14 rounded-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
             >
               <div className="flex items-center gap-3 pl-4">
                 <Clock className="w-5 h-5 text-orange-400 flex-shrink-0 transition-all duration-200" />
-                <span 
-                  className="text-white text-sm font-medium tracking-wide transition-all duration-300 ease-out" 
-                  style={{fontFamily: 'var(--font-space-mono)'}}
+                <span
+                  className="text-white text-sm font-medium tracking-wide transition-all duration-300 ease-out"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
                 >
                   History
                 </span>
@@ -299,15 +337,15 @@ export default function RecLeft({ onMinimizeChange }) {
             </button>
 
             {/* Favorites */}
-            <button 
-              onClick={() => handleViewChange('favorites')}
+            <button
+              onClick={() => handleViewChange("favorites")}
               className="w-full h-14 rounded-xl bg-blue-900/40 backdrop-blur-sm px-3 shadow-md hover:bg-blue-900/60 hover:border-white/30 transition-all duration-300 ease-out cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
             >
               <div className="flex items-center gap-3 pl-4">
                 <Star className="w-5 h-5 text-orange-400 flex-shrink-0 transition-all duration-200" />
-                <span 
-                  className="text-white text-sm font-medium tracking-wide transition-all duration-300 ease-out" 
-                  style={{fontFamily: 'var(--font-space-mono)'}}
+                <span
+                  className="text-white text-sm font-medium tracking-wide transition-all duration-300 ease-out"
+                  style={{ fontFamily: "var(--font-space-mono)" }}
                 >
                   Favorites
                 </span>

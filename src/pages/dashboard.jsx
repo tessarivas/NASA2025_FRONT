@@ -22,10 +22,18 @@ export default function Dashboard() {
 
   // Función para recibir datos del chat
   const handleChatResponse = (responseData) => {
+    console.log('🔥 Dashboard - Datos recibidos del chat:', responseData);
+    
     if (responseData?.relationship_graph) {
+      console.log('📊 Dashboard - Actualizando graphData:', responseData.relationship_graph);
       setGraphData(responseData.relationship_graph);
+    } else {
+      console.log('❌ Dashboard - No hay relationship_graph en la respuesta');
     }
   };
+
+  // Console log cuando graphData cambia
+  console.log('🌟 Dashboard - Estado actual de graphData:', graphData);
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#030409] via-[#091437] to-[#1A3A9D] relative flex flex-col">
@@ -54,7 +62,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-5 pointer-events-none">
         <Particles
           particleColors={['#ffffff', '#ffffff']}
-          particleCount={500}
+          particleCount={100}
           particleSpread={10}
           speed={0.1}
           particleBaseSize={80}

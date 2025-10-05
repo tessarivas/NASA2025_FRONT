@@ -9,14 +9,24 @@ export default function RectRight({ graphData = null }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localGraphData, setLocalGraphData] = useState(null);
 
+  console.log('🎯 RectRight - Props recibidas, graphData:', graphData);
+
   // Actualizar datos locales cuando lleguen nuevos datos
   useEffect(() => {
+    console.log('🔄 RectRight - useEffect ejecutado, graphData:', graphData);
+    
     if (graphData) {
+      console.log('✅ RectRight - Actualizando localGraphData:', graphData);
       setLocalGraphData(graphData);
+    } else {
+      console.log('⚠️ RectRight - graphData es null o undefined');
     }
   }, [graphData]);
 
+  console.log('📈 RectRight - Estado actual de localGraphData:', localGraphData);
+
   const handleViewLarge = () => {
+    console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData);
     setIsModalOpen(true);
   };
 
