@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { chatApi } from "@/services/api";
+import { chatApi, historyAPI } from "@/services/api";
 
 
 
@@ -9,8 +9,7 @@ export function useChat() {
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
     const [currentText, setCurrentText] = useState("");
-
-
+    const [articles, setArticles] = useState([]);
     const sendMessage = async (userMessage) => {
         // Add user message immediately
         const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
@@ -20,8 +19,9 @@ export function useChat() {
         try {
             const response = await chatApi.chats(userMessage);
             setResponseChat(response);
+            setArticles(response.related_articles || []);
             console.log('Respuesta del chat:', response);
-            
+            console.log('Artículos relacionados:', response.related_articles || []);
             const botMsg = { 
                 text: response.answer || response.message || "Respuesta recibida", 
                 sender: "bot", 
@@ -113,14 +113,25 @@ export function useChat() {
     }
 };
 
-
+const getMessagesHistorical = async (historicalId) => {
+    try {
+        const response = await historyAPI.getMessagesFromHistorical(historicalId);
+        console.log('Mensajes del historial:', response);
+        return response.messages || response.data || [];
+    } catch (error) {
+        console.error('Error al obtener mensajes del historial:', error);
+        return [];
+    }
+}
 
 
     return {
         messages,
         setMessages,
+        articles,
         loading,
         sendMessage,
+        getMessagesHistorical,
         responseChat,
         currentText,
         setCurrentText

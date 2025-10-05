@@ -1,8 +1,14 @@
 import { useChat } from "@/hooks/useChat";
 
 export default function RecChat() {
-  const { messages, currentText, setCurrentText, sendMessage, loading } =
-    useChat();
+  const {
+    messages,
+    currentText,
+    setCurrentText,
+    sendMessage,
+    loading,
+    articles,
+  } = useChat();
 
   const handleChat = () => {
     if (currentText.trim()) {
@@ -33,13 +39,17 @@ export default function RecChat() {
         {messages.length === 0 ? (
           <p className="text-white/50 text-center">No hay mensajes aún...</p>
         ) : (
+          // Toma el array de mensajses y lo muestra
           messages.map((message, index) => (
+            //Aqui valida si el mensaje fue enviado por el usuario o por el sistema
+            //Alinea a la derecha si es del usuario, a la izquierda si es del sistema
             <div
               key={index}
               className={`mb-3 ${
-                message.sender === "user" ? "text-right" : "text-left"
+                message.sender === "user" ? "text-right" : "text-left" //
               }`}
             >
+              {/* Elige el estilo del mensaje, azul para usuario y gris para sistema y rojo para error*/}
               <div
                 className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.sender === "user"
@@ -49,11 +59,31 @@ export default function RecChat() {
                     : "bg-white/20 text-white"
                 }`}
               >
+                {/* Muestra el mensaje en cuestión */}
                 <p className="text-sm">{message.text}</p>
                 <p className="text-xs opacity-70 mt-1">
                   {message.timestamp?.toLocaleTimeString()}
                 </p>
               </div>
+
+              {/* Muestra los artículos relacionados si existen */}
+              {articles.map((article, idx) => (
+                <div
+                  key={idx}
+                  className="mt-2 bg-blue-700 p-3 rounded-lg inline-block text-left max-w-xs lg:max-w-md"
+                >
+                  <h4 className="text-sm font-semibold mb-1">
+                    Artículos relacionados:
+                  </h4>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {article.title}
+                  </a>
+                </div>
+              ))}
             </div>
           ))
         )}
