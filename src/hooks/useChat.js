@@ -105,17 +105,45 @@ export function useChat() {
 
             console.log('Mensajes raw del backend:', rawMessages);
 
-            const formattedMessages = rawMessages.map(({ rol, message }) => {
-                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "bot"}"`);
-                return {
-                    sender: rol === "User" ? "user" : "bot", // Cambiar a lowercase para consistencia
+            const formattedMessages = rawMessages.map((msgData) => {
+                const { rol, message, related_articles, relationship_graph } = msgData;
+                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "system"}"`);
+                
+                const formattedMessage = {
+                    sender: rol === "User" ? "user" : "system", // Cambiar a "system" para consistencia
                     text: message,
                     timestamp: new Date(),
                 };
+
+                // Add articles and rawData for system messages
+                if (rol === "System" && related_articles) {
+                    formattedMessage.articles = related_articles;
+                    formattedMessage.rawData = {
+                        answer: message,
+                        related_articles,
+                        relationship_graph
+                    };
+                }
+
+                return formattedMessage;
             });
 
             setMessages(formattedMessages);
             console.log('Mensajes formateados del historial:', formattedMessages);
+
+            // Set global articles and graph from the last system message
+            const lastSystemMessage = formattedMessages
+                .filter(msg => msg.sender === "system")
+                .pop();
+
+            if (lastSystemMessage) {
+                if (lastSystemMessage.articles) {
+                    setArticles(lastSystemMessage.articles);
+                }
+                if (lastSystemMessage.rawData?.relationship_graph) {
+                    setRelationshipGraph(lastSystemMessage.rawData.relationship_graph);
+                }
+            }
             
             // Invalidate history query to refresh the sidebar
             queryClient.invalidateQueries({ queryKey: ['userHistory'] });
