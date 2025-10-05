@@ -106,7 +106,7 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
   };
 
   return (
-    <div className="h-full w-full relative rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl overflow-hidden">
+    <div className="h-full w-full relative rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl min-h-[600px]">
       {/* Header - Posición absoluta top */}
       <div className="absolute top-0 left-0 right-0 h-16 p-4 border-b border-white/20 bg-navy-blue/20 backdrop-blur-xs z-10">
         <div className="text-2xl text-center" style={{ fontFamily: "var(--font-zen-dots)" }}>
@@ -121,8 +121,8 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
       </div>
 
       {/* Messages Section - Con scroll personalizado */}
-      <div className="absolute top-16 left-0 right-0 bottom-40 overflow-hidden">
-        <div className="h-full overflow-y-auto p-4 chat-scroll">
+      <div className="absolute top-16 left-0 right-0 bottom-28">
+        <div className="h-full overflow-y-auto p-6 chat-scroll">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="mb-4">
@@ -136,7 +136,7 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
               </p>
             </div>
           ) : (
-            <div className="space-y-3 pb-4">
+            <div className="space-y-4 pb-6">
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -201,9 +201,9 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
         </div>
       </div>
 
-      {/* Input Section - Posición absoluta bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 p-6 border-t border-white/20 bg-gradient-to-t from-navy-blue/30 to-transparent backdrop-blur-xs z-10">
-        <div className="flex flex-col gap-3 h-full justify-center">
+      {/* I nput Section - Posición absoluta bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-28 p-4 border-t border-white/20 bg-gradient-to-t from-navy-blue/30 to-transparent backdrop-blur-xs z-10">
+        <div className="flex flex-col h-full justify-center max-w-2xl mx-auto">
           {/* Título del input */}
           <div className="text-center">
             <p
@@ -215,12 +215,12 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
           </div>
 
           {/* Input container */}
-          <div className="relative">
+          <div className="relative w-full">
             <div className="flex gap-3 items-end">
               <div className="flex-1 relative">
                 <input
                   type="text"
-                  className="w-full px-6 py-4 rounded-2xl border-2 border-white/20 bg-white/5 backdrop-blur-md text-white placeholder:text-white/50 focus:border-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 text-base"
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-white/20 bg-white/5 backdrop-blur-md text-white placeholder:text-white/50 focus:border-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 text-sm"
                   style={{ fontFamily: 'var(--font-space-mono)' }}
                   placeholder="Ask about space biology, microorganisms, plant research..."
                   value={currentText}
@@ -235,15 +235,15 @@ export default function RecChat({ onResponse = () => {}, initialMessage }) {
               <button
                 onClick={handleChat}
                 disabled={loading || !currentText.trim()}
-                className="p-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl group"
+                className="p-3 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:from-gray-600 disabled:to-gray-700 disabled:opacity-50 text-white transition-all duration-300 hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl group"
               >
                 {loading ? (
                   <div className="animate-spin">
-                    <Sparkles size={28} />
+                    <Sparkles size={20} />
                   </div>
                 ) : (
                   <Send
-                    size={28}
+                    size={20}
                     className="group-hover:animate-pulse transition-transform cursor-pointer"
                   />
                 )}
