@@ -8,11 +8,13 @@ import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/Particles.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [graphData, setGraphData] = useState(null); // Estado para datos del grafo
+  const location = useLocation();
 
   const handleMinimizeChange = (isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
@@ -43,12 +45,12 @@ export default function Dashboard() {
           cursorSize={100}
           isViscous={false}
           viscous={30}
-          iterationsViscous={32}
-          iterationsPoisson={32}
-          resolution={0.5}
+          iterationsViscous={8}
+          iterationsPoisson={8}
+          resolution={0.25}
           isBounce={false}
           autoDemo={true}
-          autoSpeed={0.2}
+          autoSpeed={0.05}
           autoIntensity={2.5}
           takeoverDuration={0.25}
           autoResumeDelay={3000}
@@ -60,7 +62,7 @@ export default function Dashboard() {
       <div className="absolute inset-0 z-5 pointer-events-none">
         <Particles
           particleColors={['#ffffff', '#ffffff']}
-          particleCount={500}
+          particleCount={100}
           particleSpread={10}
           speed={0.1}
           particleBaseSize={80}
@@ -97,7 +99,8 @@ export default function Dashboard() {
             minSize={30}
           >
             <div className="h-full">
-              <RecChat onResponse={handleChatResponse} />
+              {/* <RecChat onResponse={handleChatResponse} /> */}
+              <RecChat initialMessage={location.state?.newMessage} />
             </div>
           </ResizablePanel>
 

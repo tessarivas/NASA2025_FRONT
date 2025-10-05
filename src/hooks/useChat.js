@@ -1,53 +1,83 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { chatApi, historyAPI } from "@/services/api";
 
-
-
 export function useChat() {
-
+    const queryClient = useQueryClient();
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [responseChat, setResponseChat] = useState(null);
     const [currentText, setCurrentText] = useState("");
     const [articles, setArticles] = useState([]);
     const [relationshipGraph, setRelationshipGraph] = useState(null);
+
     const sendMessage = async (userMessage) => {
         // Add user message immediately
-        const userMsg = { text: userMessage, sender: "User", timestamp: new Date() };
+        const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
         setMessages(prev => [...prev, userMsg]);
 
         setLoading(true);
         try {
-            const response = await chatApi.chats(userMessage);
-            setResponseChat(response);
-            setArticles(response.related_articles || []);
-            console.log('Respuesta del chat:', response);
-            setRelationshipGraph(response.relationship_graph || null);
-            console.log('relationship_graph:', response.relationship_graph);
+            // Get user info from localStorage
+            const userString = localStorage.getItem('user');
+            const user = userString ? JSON.parse(userString) : null;
+            const userId = user?.id;
 
-            const botMsg = { 
-                text: response.answer || response.message || "Respuesta recibida", 
-                sender: "System", 
-                timestamp: new Date() 
-            };
-            setMessages(prev => [...prev, botMsg]);
-            
-            const historicalId = localStorage.getItem('historical_id');
-            if (!historicalId) {
-                const newHistoricalId = await generateHistorical(response.answer || response.message || "Respuesta recibida");
-                if (newHistoricalId) {
-                    localStorage.setItem('historical_id', newHistoricalId);
-                }
+            if (!userId) {
+                throw new Error('No user found');
             }
-            await addToHistorial({'rol': 'User', 'text': userMessage});
-            await addToHistorial({'rol': 'System', 'text': botMsg.text});
 
+            // Get existing historical_id from localStorage (if any)
+            const existingHistoricalId = localStorage.getItem('historical_id');
+
+            // Send message using the new unified API
+            const response = await chatApi.chats(userMessage, userId, existingHistoricalId);
+            
+            console.log('Chat response:', response);
+            setResponseChat(response);
+
+            if (response.success) {
+                // Add bot response to messages
+                const botMsg = { 
+                    text: response.response.answer, 
+                    sender: "bot", 
+                    timestamp: new Date() 
+                };
+                setMessages(prev => [...prev, botMsg]);
+
+                // Extract and set articles from response
+                if (response.response.related_articles) {
+                    setArticles(response.response.related_articles);
+                }
+
+                // Extract and set relationship graph from response
+                if (response.response.relationship_graph) {
+                    setRelationshipGraph(response.response.relationship_graph);
+                }
+
+                // Update localStorage with historical_id (for new chats or existing ones)
+                if (response.historical_id) {
+                    localStorage.setItem('historical_id', response.historical_id);
+                    
+                    // Invalidate history query to refresh the sidebar
+                    queryClient.invalidateQueries({ queryKey: ['userHistory'] });
+                }
+            } else {
+                // Handle error response
+                const errorMsg = { 
+                    text: response.error || "Error processing message", 
+                    sender: "bot", 
+                    timestamp: new Date(),
+                    isError: true 
+                };
+                setMessages(prev => [...prev, errorMsg]);
+            }
             
         } catch (error) {
-            console.error('Error al enviar el mensaje:', error);
+            console.error('Error sending message:', error);
             // Add error message
             const errorMsg = { 
-                text: "Error al enviar el mensaje", 
+                text: "Error sending message", 
                 sender: "bot", 
                 timestamp: new Date(),
                 isError: true 
@@ -56,104 +86,70 @@ export function useChat() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
-    const generateHistorical = async (message) => {
-    try {
-        // Obtener el usuario desde localStorage
-        const userString = localStorage.getItem('user');
-        const user = userString ? JSON.parse(userString) : null;
+    const getMessagesHistorical = async (historicalId) => {
+        try {
+            localStorage.setItem("historical_id", historicalId);
+            setMessages([]);
+            setArticles([]);
+            setRelationshipGraph(null);
+            
+            const response = await historyAPI.getMessagesFromHistorical(historicalId);
+            console.log('Mensajes del historial:', response);
+            
+            const rawMessages = Array.isArray(response)
+                ? response
+                : response.messages || response.data || [];
 
-        // Obtener el ID del usuario
-        const userId = user?.id;
+            console.log('Mensajes raw del backend:', rawMessages);
 
-        if (!userId) {
-            console.error('No se encontró el ID del usuario');
-            return null;
+            const formattedMessages = rawMessages.map(({ rol, message }) => {
+                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "bot"}"`);
+                return {
+                    sender: rol === "User" ? "user" : "bot", // Cambiar a lowercase para consistencia
+                    text: message,
+                    timestamp: new Date(),
+                };
+            });
+
+            setMessages(formattedMessages);
+            console.log('Mensajes formateados del historial:', formattedMessages);
+            
+            // Invalidate history query to refresh the sidebar
+            queryClient.invalidateQueries({ queryKey: ['userHistory'] });
+            
+            return formattedMessages;
+        } catch (error) {
+            console.error('Error al obtener mensajes del historial:', error);
+            return [];
         }
+    };
 
-        // Generar título para el historial
-        const titleResponse = await chatApi.generateTitle(message);
-        const title = titleResponse.title || titleResponse.message;
-        console.log('Generated title:', title);
-        console.log('User ID:', userId);
-
-        // Agregar al historial
-        const historicalResponse = await chatApi.addToHistorical(title, userId);
-        console.log('Historical response:', historicalResponse);
-
-        return (
-            historicalResponse._id ||
-            historicalResponse.id ||
-            historicalResponse.historicalId ||
-            historicalResponse.historical_id
-        );
-    } catch (error) {
-        console.error('Error al agregar al historial:', error);
-        return null;
-    }
-};
-
- const addToHistorial = async (message) => {
-    const historicalId = localStorage.getItem('historical_id');
-    if (!historicalId) {
-        console.error('No se encontró el ID del historial');
-        return null;
-    }
-
-    try {
-
-        const response = await chatApi.addMessageToHistorial({
-            historical_user_id: historicalId,
-            rol: message.rol,
-            message: message.text
-        });
-        console.log('Mensaje agregado al historial:', response);
-        return response;
-    } catch (error) {
-        console.error('Error al agregar mensaje al historial:', error);
-        return null;
-    }
-};
-
-const getMessagesHistorical = async (historicalId) => {
-    try {
-        localStorage.setItem("historical_id", historicalId);
+    const resetChat = () => {
         setMessages([]);
-        const response = await historyAPI.getMessagesFromHistorical(historicalId);
-        console.log('Mensajes del historial:', response);
-        const rawMessages = Array.isArray(response)
-            ? response
-            : response.messages || response.data || [];
-
-        const formattedMessages = rawMessages.map(({ rol, message }) => ({
-            sender: rol === "User" ? "User" : "System",
-            text: message,
-            timestamp: new Date(), // opcional
-            }));
-
-
-        setMessages(formattedMessages);
-        console.log('Mensajes formateados del historial:', formattedMessages);
-        return response.messages || response.data || [];
-    } catch (error) {
-        console.error('Error al obtener mensajes del historial:', error);
-        return [];
-    }
-}
-
+        setResponseChat(null);
+        setCurrentText("");
+        setArticles([]);
+        setRelationshipGraph(null);
+        // Clear historical_id from localStorage when starting a new chat
+        localStorage.removeItem('historical_id');
+        // Invalidate history query to refresh the sidebar when starting a new chat
+        queryClient.invalidateQueries({ queryKey: ['userHistory'] });
+    };
 
     return {
         messages,
         setMessages,
-        articles,
         loading,
         sendMessage,
-        getMessagesHistorical,
         responseChat,
         currentText,
         setCurrentText,
+        relationshipGraph,
         setRelationshipGraph,
-        relationshipGraph
+        resetChat,
+        articles,
+        getMessagesHistorical
     };
 }

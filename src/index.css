@@ -239,3 +239,24 @@
 .animate-fadeIn {
   animation: fadeIn 0.4s ease-out forwards;
 }
+
+/* Scroll personalizado para el chat */
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 10px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #E26B40 0%, #D63A12 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FF7A33 0%, #D63A12 100%);
+  transform: scaleX(1.2);
+}
