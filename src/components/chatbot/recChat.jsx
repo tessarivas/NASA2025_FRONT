@@ -1,4 +1,5 @@
 import { useChat } from "@/hooks/useChat";
+import { useEffect } from "react";
 
 export default function RecChat() {
   const {
@@ -10,8 +11,23 @@ export default function RecChat() {
     articles,
   } = useChat();
 
-  const handleChat = () => {
+  // Interceptar la última respuesta del useChat
+  useEffect(() => {
+    if (lastResponse && lastResponse.relationship_graph) {
+      console.log("🎯 RecChat - Interceptando respuesta de useChat:", lastResponse);
+      console.log("📤 RecChat - Pasando datos al Dashboard:", lastResponse);
+      
+      if (onResponse) {
+        onResponse(lastResponse);
+      }
+    }
+  }, [lastResponse, onResponse]);
+
+  const handleChat = async () => {
     if (currentText.trim()) {
+      console.log("💬 RecChat - Enviando mensaje:", currentText);
+      
+      // Solo usar el sistema useChat (quitar el fetch duplicado)
       sendMessage(currentText);
       setCurrentText("");
     }

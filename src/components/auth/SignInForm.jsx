@@ -39,10 +39,21 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full max-w-md mx-auto">
-      {/* Container with card styling */}
-      <div className="bg-royal-blue/10 backdrop-blur-md border border-royal-blue/20 rounded-2xl p-8 w-full shadow-2xl">
-        {/* Title */}
-        <div className="text-5xl mb-4 text-center" style={{ fontFamily: 'Zen Dots' }}>
+      {/* Container with StarBorder */}
+      <StarBorder
+        as="div"
+        className="w-full"
+        color="white"
+        speed="8s"
+        thickness={2}
+        backgroundColor="royal-blue/10"
+        borderRadius="rounded-2xl"
+        borderColor="border-white/20"
+        height="p-8"
+      >
+        <div className="backdrop-blur-md space-y-6">
+          {/* Title */}
+          <div className="text-5xl mb-4 text-center" style={{ fontFamily: 'Zen Dots' }}>
           <GradientText
             colors={["#E26B40", "#FF7A33", "#FF4F11", "#D63A12", "#A6210A"]}
             animationSpeed={4.5}
@@ -145,7 +156,8 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
             <span>Back to explore</span>
           </button>
         </div>
-      </div>
+        </div>
+      </StarBorder>
     </div>
   );
 }
