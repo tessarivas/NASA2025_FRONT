@@ -83,9 +83,6 @@ function processRadialData(articles) {
       }
     });
   });
-
-  console.log("📊 Radial Chart - Conteo por categoría:", categoryCounts);
-
   // Encontrar la categoría con más artículos
   const topCategory = Object.entries(categoryCounts)
     .sort(([,a], [,b]) => b - a)[0];

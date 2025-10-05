@@ -89,7 +89,6 @@ export default function RecLeft({ onMinimizeChange }) {
   };
 
   const handleSelectHistory = (id) => {
-    console.log("🧩 Seleccionando historial:", id);
     getMessagesHistorical(id);
     localStorage.setItem("historical_id", id);
   };
@@ -101,8 +100,6 @@ export default function RecLeft({ onMinimizeChange }) {
     // Disparar un evento personalizado para que el chat se resetee
     const newChatEvent = new CustomEvent('newChatStarted');
     window.dispatchEvent(newChatEvent);
-    
-    console.log('Starting new chat - historical_id cleared via resetChat');
   };
 
   const handleDeleteHistory = async (historyId, event) => {

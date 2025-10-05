@@ -28,7 +28,6 @@ const chartOptions = [
 export function ChartSelector({ articlesData }) {
   const [selectedChart, setSelectedChart] = useState(chartOptions[0]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  console.log("📊 ChartSelector - articlesData:", articlesData);
   const SelectedComponent = selectedChart.component;
   const SelectedIcon = selectedChart.icon;
 

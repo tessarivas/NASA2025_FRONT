@@ -31,9 +31,6 @@ function processTagsData(articles) {
       });
     }
   });
-
-  console.log("🏷️ Tags más populares:", tagCounts);
-
   // Obtener top 6 tags
   const topTags = Object.entries(tagCounts)
     .sort(([, a], [, b]) => b - a)

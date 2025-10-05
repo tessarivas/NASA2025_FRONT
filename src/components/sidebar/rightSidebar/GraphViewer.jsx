@@ -6,9 +6,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
 
   // Solo logear cuando realmente hay datos nuevos
   useEffect(() => {
-    if (graphData) {
-      console.log('📊 GraphViewer - Datos recibidos:', graphData);
-    }
   }, [graphData]);
 
   // Datos de fallback si no se proporcionan datos
@@ -84,20 +81,8 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
   const rawGraphData = graphData || defaultGraphData;
   const currentGraphData = validateGraphData(rawGraphData) || defaultGraphData;
   
-  console.log('🎨 GraphViewer - Datos que se van a usar:', currentGraphData);
-  console.log('🔹 GraphViewer - ¿Usando datos reales?', !!graphData);
 
   useEffect(() => {
-    console.log('⚡ GraphViewer - useEffect ejecutado');
-    console.log('📥 GraphViewer - currentGraphData en useEffect:', currentGraphData);
-    
-    if (!containerRef.current) {
-      console.log('❌ GraphViewer - containerRef.current es null');
-      return;
-    }
-
-    console.log('🚀 GraphViewer - Iniciando renderizado del grafo...');
-    
     // Limpiar contenedor
     d3.select(containerRef.current).selectAll("*").remove();
 

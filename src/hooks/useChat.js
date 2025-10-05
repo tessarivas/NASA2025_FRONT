@@ -31,8 +31,6 @@ export function useChat() {
 
             // Send message using the new unified API
             const response = await chatApi.chats(userMessage, userId, existingHistoricalId);
-            
-            console.log('Chat response:', response);
             setResponseChat(response);
 
             if (response.success) {
@@ -97,18 +95,11 @@ export function useChat() {
             setRelationshipGraph(null);
             
             const response = await historyAPI.getMessagesFromHistorical(historicalId);
-            console.log('Mensajes del historial:', response);
-            
             const rawMessages = Array.isArray(response)
                 ? response
                 : response.messages || response.data || [];
-
-            console.log('Mensajes raw del backend:', rawMessages);
-
             const formattedMessages = rawMessages.map((msgData) => {
                 const { rol, message, related_articles, relationship_graph } = msgData;
-                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "system"}"`);
-                
                 const formattedMessage = {
                     sender: rol === "User" ? "user" : "system", // Cambiar a "system" para consistencia
                     text: message,
@@ -129,8 +120,6 @@ export function useChat() {
             });
 
             setMessages(formattedMessages);
-            console.log('Mensajes formateados del historial:', formattedMessages);
-
             // Set global articles and graph from the last system message
             const lastSystemMessage = formattedMessages
                 .filter(msg => msg.sender === "system")

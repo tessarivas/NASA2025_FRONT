@@ -15,9 +15,8 @@ import { useChatContext } from "@/context/ChatContext";
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [graphData, setGraphData] = useState(null);
-  const [articlesData, setArticlesData] = useState(null);
   const location = useLocation();
-  const { relationshipGraph, articles } = useChatContext();
+  const { relationshipGraph} = useChatContext();
 
   const handleMinimizeChange = useCallback((isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
@@ -28,12 +27,7 @@ export default function Dashboard() {
     if (relationshipGraph && relationshipGraph !== graphData) {
       setGraphData(relationshipGraph);
     }
-    console.log("🔄 Dashboard - Actualizando articlesData:", articles);
-    if (articles && articles !== articlesData) {
-      setArticlesData(articles);
-      console.log("🔄 Dashboard - Actualizando articlesData:", articlesData);
-    }
-  }, [relationshipGraph, graphData, articlesData]);
+  }, [relationshipGraph, graphData,]);
 
   // Memoizar el initialMessage para evitar re-renders
   const memoizedInitialMessage = useMemo(() => {
@@ -117,7 +111,7 @@ export default function Dashboard() {
             maxSize={35}
           >
             <div className="h-full">
-              <RectRight graphData={graphData} articlesData={articlesData} />
+              <RectRight graphData={graphData} />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

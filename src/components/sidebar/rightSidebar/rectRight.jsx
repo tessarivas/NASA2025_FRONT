@@ -16,20 +16,14 @@ const RectRight = memo(function RectRight({
   // Solo logear cuando realmente hay cambios en graphData
   useEffect(() => {
     if (graphData && graphData !== localGraphData) {
-      console.log("🔄 RectRight - Actualizando localGraphData:", graphData);
       setLocalGraphData(graphData);
     } //
     if (articlesData && articlesData !== localArticlesData) {
-      console.log(
-        "🔄 RectRight - Actualizando localArticlesData:",
-        articlesData
-      );
       setLocalArticlesData(articlesData);
     }
   }, [graphData, localGraphData, articlesData, localArticlesData]);
 
   const handleViewLarge = () => {
-    console.log("🔍 RectRight - Abriendo modal con datos:", localGraphData);
     setIsModalOpen(true);
   };
 

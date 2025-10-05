@@ -153,9 +153,6 @@ function processArticlesData({ articles }) {
         (yearCategoryData[year][category] || 0) + 1;
     });
   });
-
-  console.log("📅 Datos por año y categoría:", yearCategoryData);
-
   // Obtener rango de años de los datos reales
   const availableYears = Object.keys(yearCategoryData)
     .map((y) => parseInt(y))
@@ -176,9 +173,6 @@ function processArticlesData({ articles }) {
   Object.values(yearCategoryData).forEach((yearData) => {
     Object.keys(yearData).forEach((category) => allCategories.add(category));
   });
-
-  console.log("🏷️ Categorías encontradas:", Array.from(allCategories));
-
   // Crear datos del gráfico
   const chartData = allYears.map((year) => {
     const data = { year: year.toString() };
@@ -190,8 +184,6 @@ function processArticlesData({ articles }) {
 
     return data;
   });
-
-  console.log("📊 Datos finales del gráfico:", chartData);
 
   return chartData;
 }

@@ -19,22 +19,6 @@ export default function RecChat({ initialMessage }) {
   const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
 
-  // DEBUG: Verificar qué llega desde useChat
-  useEffect(() => {
-    console.log("🔍 DEBUG - Messages:", messages);
-    console.log("🔍 DEBUG - Articles globales:", articles);
-    
-    // Verificar cada mensaje individual
-    messages.forEach((msg, index) => {
-      console.log(`🔍 Mensaje ${index}:`, {
-        sender: msg.sender,
-        hasArticles: !!msg.articles,
-        articlesLength: msg.articles?.length || 0,
-        articles: msg.articles
-      });
-    });
-  }, [messages, articles]);
-
   // Send initial message if provided (only once and only if no existing chat)
   useEffect(() => {
     const existingHistoricalId = localStorage.getItem('historical_id');
@@ -70,8 +54,6 @@ export default function RecChat({ initialMessage }) {
 
   const handleChat = async () => {
     if (currentText.trim()) {
-      console.log("💬 RecChat - Enviando mensaje:", currentText);
-
       sendMessage(currentText);
       setCurrentText("");
     }

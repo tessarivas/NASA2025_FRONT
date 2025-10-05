@@ -29,7 +29,6 @@ export default function Article({ articles }) {
     // Function to handle favorite toggle
     const toggleFavorite = (article) => {
         if (!user?._id) {
-            console.log('User must be logged in to add favorites');
             return;
         }
 
