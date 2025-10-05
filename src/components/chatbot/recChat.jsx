@@ -1,10 +1,10 @@
-import { useChat } from "@/hooks/useChat";
 import { useEffect, useRef } from "react";
-import GradientText from '../GradientText';
-import { Send, Sparkles, Rocket } from 'lucide-react';
+import GradientText from "../GradientText";
+import { Send, Sparkles, Rocket } from "lucide-react";
+import { useChatContext } from "@/context/ChatContext";
 import Article from './Article';
 
-export default function RecChat({ onResponse, initialMessage }) {
+export default function RecChat({ onResponse = () => {}, initialMessage }) {
   const {
     messages,
     currentText,
@@ -12,8 +12,15 @@ export default function RecChat({ onResponse, initialMessage }) {
     sendMessage,
     loading,
     articles,
+    relationshipGraph,
     resetChat,
-  } = useChat();
+  } = useChatContext();
+
+  useEffect(() => {
+    if (relationshipGraph) {
+      onResponse({ relationship_graph: relationshipGraph });
+    }
+  }, [relationshipGraph, onResponse]);
   
   const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
@@ -86,7 +93,7 @@ export default function RecChat({ onResponse, initialMessage }) {
   const handleChat = async () => {
     if (currentText.trim()) {
       console.log("💬 RecChat - Enviando mensaje:", currentText);
-      
+
       sendMessage(currentText);
       setCurrentText("");
     }
@@ -199,7 +206,7 @@ export default function RecChat({ onResponse, initialMessage }) {
         <div className="flex flex-col gap-3 h-full justify-center">
           {/* Título del input */}
           <div className="text-center">
-            <p 
+            <p
               className="text-white/80 text-sm"
               style={{ fontFamily: 'var(--font-space-mono)' }}
             >
@@ -235,7 +242,10 @@ export default function RecChat({ onResponse, initialMessage }) {
                     <Sparkles size={28} />
                   </div>
                 ) : (
-                  <Send size={28} className="group-hover:animate-pulse transition-transform cursor-pointer" />
+                  <Send
+                    size={28}
+                    className="group-hover:animate-pulse transition-transform cursor-pointer"
+                  />
                 )}
               </button>
             </div>
@@ -243,7 +253,7 @@ export default function RecChat({ onResponse, initialMessage }) {
 
           {/* Footer */}
           <div className="text-center">
-            <p 
+            <p
               className="text-white/50 text-xs"
               style={{ fontFamily: 'var(--font-space-mono)' }}
             >

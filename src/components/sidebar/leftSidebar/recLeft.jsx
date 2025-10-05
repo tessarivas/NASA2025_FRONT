@@ -17,8 +17,10 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
+import { useChatContext } from "@/context/ChatContext";
 
 export default function RecLeft({ onMinimizeChange }) {
+  const { getMessagesHistorical, resetChat } = useChatContext();
   const { user, logout } = useCurrentUser();
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
   const [isMinimized, setIsMinimized] = useState(false);
@@ -86,15 +88,21 @@ export default function RecLeft({ onMinimizeChange }) {
     setCurrentView("menu");
   };
 
+  const handleSelectHistory = (id) => {
+    console.log("🧩 Seleccionando historial:", id);
+    getMessagesHistorical(id);
+    localStorage.setItem("historical_id", id);
+  };
+
   const handleNewChat = () => {
-    // Limpiar el historical_id para crear un nuevo chat
-    localStorage.removeItem('historical_id');
+    // Reset the chat using the context
+    resetChat();
     
     // Disparar un evento personalizado para que el chat se resetee
     const newChatEvent = new CustomEvent('newChatStarted');
     window.dispatchEvent(newChatEvent);
     
-    console.log('Starting new chat - historical_id cleared');
+    console.log('Starting new chat - historical_id cleared via resetChat');
   };
 
   const handleDeleteHistory = async (historyId, event) => {
@@ -162,6 +170,7 @@ export default function RecLeft({ onMinimizeChange }) {
             <div
               key={index}
               className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors cursor-pointer group relative"
+              onClick={() => handleSelectHistory(item._id)}
               title={deletingHistoryId === item._id ? "" : (item.title || item.query || "Conversation")} // Hide tooltip when confirming
             >
               {deletingHistoryId === item._id ? (
