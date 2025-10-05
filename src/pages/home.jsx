@@ -4,6 +4,7 @@ import Particles from '../components/Particles2';
 import SearchBar from '../components/SearchBar';
 import SignInForm from '../components/auth/SignInForm';
 import SignUpForm from '../components/auth/SignUpForm';
+import FadeContent from '../components/FadeContent'
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
@@ -11,24 +12,24 @@ import { useState } from 'react';
 export default function HomePage() {
     const { user, isAuthenticated } = useCurrentUser();
     const [currentView, setCurrentView] = useState('welcome'); // 'welcome', 'signin', 'signup'
-    
+
     // Función para obtener el primer nombre
     const getFirstName = (user) => {
         if (!user) return '';
-        
+
         // Si hay un campo 'name', tomar la primera palabra
         if (user.name) {
             return user.name.split(' ')[0];
         }
-        
+
         // Si solo hay username, usar eso
         if (user.username) {
             return user.username;
         }
-        
+
         return 'Usuario';
     };
-    
+
     const handleSearch = (query) => {
         console.log('Searching for:', query);
         // Aquí puedes agregar la lógica de búsqueda
@@ -54,7 +55,7 @@ export default function HomePage() {
         // Force re-render by triggering storage event
         window.dispatchEvent(new Event('storage'));
     };
-    
+
     return (
         <div className='bg-gradient-to-b from-[#030409] to-[#091437] relative'
         >
@@ -65,13 +66,13 @@ export default function HomePage() {
                     <div className="text-white font-bold text-xl" style={{ fontFamily: 'Zen Dots' }}>
                         NASA Explorer
                     </div>
-                    
+
                     {/* Navigation Links */}
                     <div className="flex items-center gap-4">
                         {isAuthenticated ? (
                             <>
                                 {/* Log Out button */}
-                                <button 
+                                <button
                                     onClick={handleLogout}
                                     className="text-white/70 cursor-pointer hover:text-white transition-colors duration-300 text-sm"
                                     style={{ fontFamily: 'Space Mono, monospace' }}
@@ -80,8 +81,8 @@ export default function HomePage() {
                                 </button>
 
                                 {/* Dashboard */}
-                                <Link 
-                                    to="/dashboard" 
+                                <Link
+                                    to="/dashboard"
                                     className="bg-royal-blue/20 hover:bg-royal-blue/30 text-blue border border-royal-blue/30 transition-all duration-300 text-sm backdrop-blur-sm px-4 py-2 rounded-lg"
                                     style={{ fontFamily: 'Space Mono, monospace' }}
                                 >
@@ -90,14 +91,14 @@ export default function HomePage() {
                             </>
                         ) : (
                             <>
-                                <button 
+                                <button
                                     onClick={handleSignInClick}
                                     className="text-blue hover:text-orange transition-colors duration-300 text-sm cursor-pointer"
                                     style={{ fontFamily: 'Space Mono, monospace' }}
                                 >
                                     Sign In
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleSignUpClick}
                                     className="bg-royal-blue/20 hover:bg-royal-blue/30 text-blue border border-royal-blue/30 hover:border-blue/50 cursor-pointer px-4 py-2 rounded-lg transition-all duration-300 text-sm backdrop-blur-sm"
                                     style={{ fontFamily: 'Space Mono, monospace' }}
@@ -120,7 +121,7 @@ export default function HomePage() {
                 zIndex: 0,
                 opacity: 0.5
             }}>
-                <Particles/>
+                <Particles />
             </div>
 
             {/* Contenedor de dos columnas */}
@@ -147,37 +148,46 @@ export default function HomePage() {
                     {/* Contenido de la columna izquierda */}
                     <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '600px' }}>
                         {currentView === 'welcome' && (
-                            <Welcome
-                                name={isAuthenticated ? getFirstName(user) : "Explorer"}
-                            />
+                            <FadeContent>
+                                <Welcome
+                                    name={isAuthenticated ? getFirstName(user) : "Explorer"}
+                                />
+                            </FadeContent>
                         )}
                         {currentView === 'signin' && (
-                            <SignInForm
-                                onToggleToSignUp={() => setCurrentView('signup')}
-                                onCancel={handleBackToWelcome}
-                            />
+                            <FadeContent>
+                                <SignInForm
+                                    onToggleToSignUp={() => setCurrentView('signup')}
+                                    onCancel={handleBackToWelcome}
+                                />
+                            </FadeContent>
                         )}
                         {currentView === 'signup' && (
-                            <SignUpForm
-                                onToggleToSignIn={() => setCurrentView('signin')}
-                                onCancel={handleBackToWelcome}
-                            />
+                            <FadeContent>
+                                <SignUpForm
+                                    onToggleToSignIn={() => setCurrentView('signin')}
+                                    onCancel={handleBackToWelcome}
+                                />
+                            </FadeContent>
+
                         )}
                     </div>
 
                     {/* Componente de búsqueda - solo en vista welcome */}
                     {currentView === 'welcome' && (
                         <>
-                            <SearchBar 
-                                onSearch={handleSearch}
-                                placeholder="Ask another question..."
-                            />
-                            
+                            <FadeContent
+                            className='w-full'>
+                                <SearchBar
+                                    onSearch={handleSearch}
+                                    placeholder="Ask another question..."
+                                />
+                            </FadeContent>
                             {/* Call to action sutil */}
                             {isAuthenticated && (
                                 <div className="text-center -mt-4">
-                                    <Link 
-                                        to="/dashboard" 
+                                    <Link
+                                        to="/dashboard"
                                         className="inline-flex items-center text-blue hover:text-orange transition-colors duration-300 text-sm group"
                                         style={{ fontFamily: 'Space Mono, monospace' }}
                                     >
