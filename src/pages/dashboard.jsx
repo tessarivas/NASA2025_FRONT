@@ -10,17 +10,27 @@ import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/Particles.jsx";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useChatContext } from "@/context/ChatContext";
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [graphData, setGraphData] = useState(null); // Estado para datos del grafo
   const location = useLocation();
+  const { relationshipGraph } = useChatContext();
 
   const handleMinimizeChange = (isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
   };
 
-  // Función para recibir datos del chat
+  // Actualizar graphData cuando relationshipGraph cambie
+  useEffect(() => {
+    if (relationshipGraph) {
+      console.log('📊 Dashboard - Actualizando graphData desde contexto:', relationshipGraph);
+      setGraphData(relationshipGraph);
+    }
+  }, [relationshipGraph]);
+
+  // Función para recibir datos del chat (mantener para compatibilidad)
   const handleChatResponse = (responseData) => {
     console.log('🔥 Dashboard - Datos recibidos del chat:', responseData);
     
@@ -99,8 +109,10 @@ export default function Dashboard() {
             minSize={30}
           >
             <div className="h-full">
-              {/* <RecChat onResponse={handleChatResponse} /> */}
-              <RecChat initialMessage={location.state?.newMessage} />
+              <RecChat 
+                onResponse={handleChatResponse} 
+                initialMessage={location.state?.newMessage} 
+              />
             </div>
           </ResizablePanel>
 

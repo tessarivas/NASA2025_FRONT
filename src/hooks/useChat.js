@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { chatApi } from "@/services/api";
+import { chatApi, historyAPI } from "@/services/api";
 
 export function useChat() {
     const queryClient = useQueryClient();
@@ -9,6 +9,7 @@ export function useChat() {
     const [responseChat, setResponseChat] = useState(null);
     const [currentText, setCurrentText] = useState("");
     const [articles, setArticles] = useState([]);
+    const [relationshipGraph, setRelationshipGraph] = useState(null);
 
     const sendMessage = async (userMessage) => {
         // Add user message immediately
@@ -51,6 +52,11 @@ export function useChat() {
                     setArticles(response.response.related_articles);
                 }
 
+                // Extract and set relationship graph from response
+                if (response.response.relationship_graph) {
+                    setRelationshipGraph(response.response.relationship_graph);
+                }
+
                 // Update localStorage with historical_id (for new chats or existing ones)
                 if (response.historical_id) {
                     localStorage.setItem('historical_id', response.historical_id);
@@ -84,12 +90,51 @@ export function useChat() {
         }
     };
 
+    const getMessagesHistorical = async (historicalId) => {
+        try {
+            localStorage.setItem("historical_id", historicalId);
+            setMessages([]);
+            setArticles([]);
+            setRelationshipGraph(null);
+            
+            const response = await historyAPI.getMessagesFromHistorical(historicalId);
+            console.log('Mensajes del historial:', response);
+            
+            const rawMessages = Array.isArray(response)
+                ? response
+                : response.messages || response.data || [];
+
+            console.log('Mensajes raw del backend:', rawMessages);
+
+            const formattedMessages = rawMessages.map(({ rol, message }) => {
+                console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "bot"}"`);
+                return {
+                    sender: rol === "User" ? "user" : "bot", // Cambiar a lowercase para consistencia
+                    text: message,
+                    timestamp: new Date(),
+                };
+            });
+
+            setMessages(formattedMessages);
+            console.log('Mensajes formateados del historial:', formattedMessages);
+            
+            // Invalidate history query to refresh the sidebar
+            queryClient.invalidateQueries({ queryKey: ['userHistory'] });
+            
+            return formattedMessages;
+        } catch (error) {
+            console.error('Error al obtener mensajes del historial:', error);
+            return [];
+        }
+    };
+
     const resetChat = () => {
         setMessages([]);
         setResponseChat(null);
         setCurrentText("");
         setArticles([]);
-        // Clear historical_id when starting new chat
+        setRelationshipGraph(null);
+        // Clear historical_id from localStorage when starting a new chat
         localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
         queryClient.invalidateQueries({ queryKey: ['userHistory'] });
@@ -103,7 +148,10 @@ export function useChat() {
         responseChat,
         currentText,
         setCurrentText,
+        relationshipGraph,
+        setRelationshipGraph,
         resetChat,
-        articles
+        articles,
+        getMessagesHistorical
     };
 }
