@@ -1,11 +1,27 @@
 import { useChat } from "@/hooks/useChat";
+import { useEffect } from "react";
 
-export default function RecChat() {
-  const { messages, currentText, setCurrentText, sendMessage, loading } =
+export default function RecChat({ onResponse }) {
+  const { messages, currentText, setCurrentText, sendMessage, loading, lastResponse } =
     useChat();
 
-  const handleChat = () => {
+  // Interceptar la última respuesta del useChat
+  useEffect(() => {
+    if (lastResponse && lastResponse.relationship_graph) {
+      console.log("🎯 RecChat - Interceptando respuesta de useChat:", lastResponse);
+      console.log("📤 RecChat - Pasando datos al Dashboard:", lastResponse);
+      
+      if (onResponse) {
+        onResponse(lastResponse);
+      }
+    }
+  }, [lastResponse, onResponse]);
+
+  const handleChat = async () => {
     if (currentText.trim()) {
+      console.log("💬 RecChat - Enviando mensaje:", currentText);
+      
+      // Solo usar el sistema useChat (quitar el fetch duplicado)
       sendMessage(currentText);
       setCurrentText("");
     }
@@ -14,30 +30,6 @@ export default function RecChat() {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !loading) {
       handleChat();
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!currentText.trim()) return;
-
-    try {
-      const response = await fetch("/vertex-ai/structured-simple", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentText }),
-      });
-
-      const data = await response.json();
-
-      // Llamar a la función del padre para pasar los datos
-      if (onResponse && data.relationship_graph) {
-        onResponse(data);
-      }
-
-      setCurrentText("");
-    } catch (error) {
-      console.error("Error:", error);
     }
   };
 
