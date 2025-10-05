@@ -293,13 +293,13 @@ export default function RecLeft({ onMinimizeChange }) {
             return (
               <div
                 key={index}
-                className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 hover:bg-blue-900/60 transition-colors group"
+                className="bg-blue-900/40 backdrop-blur-sm rounded-lg p-3 cursor-pointer hover:bg-blue-900/60 transition-colors group"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
                     <button
                       onClick={handleArticleClick}
-                      className="text-left w-full group/title"
+                      className="text-left w-full group/title "
                       title={article.title} // Tooltip with full title
                     >
                       <p
