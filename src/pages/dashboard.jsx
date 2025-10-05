@@ -15,8 +15,9 @@ import { useChatContext } from "@/context/ChatContext";
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
   const [graphData, setGraphData] = useState(null);
+  const [articlesData, setArticlesData] = useState(null);
   const location = useLocation();
-  const { relationshipGraph } = useChatContext();
+  const { relationshipGraph, articles } = useChatContext();
 
   const handleMinimizeChange = useCallback((isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
@@ -27,7 +28,12 @@ export default function Dashboard() {
     if (relationshipGraph && relationshipGraph !== graphData) {
       setGraphData(relationshipGraph);
     }
-  }, [relationshipGraph, graphData]);
+    console.log("🔄 Dashboard - Actualizando articlesData:", articles);
+    if (articles && articles !== articlesData) {
+      setArticlesData(articles);
+      console.log("🔄 Dashboard - Actualizando articlesData:", articlesData);
+    }
+  }, [relationshipGraph, graphData, articlesData]);
 
   // Memoizar el initialMessage para evitar re-renders
   const memoizedInitialMessage = useMemo(() => {
@@ -39,7 +45,7 @@ export default function Dashboard() {
       {/* LiquidEther - Capa más baja (z-0) */}
       <div className="absolute inset-0 z-0 pointer-events-none mix-blend-overlay">
         <LiquidEther
-          colors={['#00B8EB', '#00B8EB', '#00B8EB']}
+          colors={["#00B8EB", "#00B8EB", "#00B8EB"]}
           mouseForce={20}
           cursorSize={100}
           isViscous={false}
@@ -60,7 +66,7 @@ export default function Dashboard() {
       {/* Particles - Capa intermedia (z-5) */}
       <div className="absolute inset-0 z-5 pointer-events-none">
         <Particles
-          particleColors={['#ffffff', '#ffffff']}
+          particleColors={["#ffffff", "#ffffff"]}
           particleCount={100}
           particleSpread={10}
           speed={0.1}
@@ -70,7 +76,7 @@ export default function Dashboard() {
           disableRotation={false}
         />
       </div>
-      
+
       {/* Dashboard content - Capa superior (z-10) */}
       <div className="flex flex-1 gap-2 relative z-10 p-4">
         <ResizablePanelGroup
@@ -78,9 +84,9 @@ export default function Dashboard() {
           className="flex-1 rounded-lg border border-white/0 gap-2"
         >
           {/* Menu Izquierdo */}
-          <ResizablePanel 
+          <ResizablePanel
             defaultSize={isLeftSidebarMinimized ? 6 : 25}
-            minSize={isLeftSidebarMinimized ? 6 : 20} 
+            minSize={isLeftSidebarMinimized ? 6 : 20}
             maxSize={isLeftSidebarMinimized ? 6 : 40}
           >
             <div className="h-full">
@@ -93,27 +99,25 @@ export default function Dashboard() {
           )}
 
           {/* Chat Central */}
-          <ResizablePanel 
+          <ResizablePanel
             defaultSize={isLeftSidebarMinimized ? 70 : 50}
             minSize={30}
           >
             <div className="h-full">
-              <RecChat 
-                initialMessage={memoizedInitialMessage} 
-              />
+              <RecChat initialMessage={memoizedInitialMessage} />
             </div>
           </ResizablePanel>
 
           <ResizableHandle className="bg-transparent hover:bg-white/10 transition-colors w-2" />
 
           {/* Menu Derecho */}
-          <ResizablePanel 
+          <ResizablePanel
             defaultSize={isLeftSidebarMinimized ? 22 : 25}
             minSize={20}
             maxSize={35}
           >
             <div className="h-full">
-              <RectRight graphData={graphData} />
+              <RectRight graphData={graphData} articlesData={articlesData} />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -7,7 +7,8 @@ import {
   RadialBarChart,
   ResponsiveContainer
 } from "recharts"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useChatContext } from "@/context/ChatContext";
 
 // Función para procesar artículos y generar datos del radial chart
 function processRadialData(articles) {
@@ -117,11 +118,59 @@ function processRadialData(articles) {
   };
 }
 
-export function ResearchProgressRadialChart({ articles = [] }) {
-  // Procesar datos de artículos
-  const chartInfo = useMemo(() => processRadialData(articles), [articles]);
-  
-  const { data, category, description, percentage, growth, totalArticles } = chartInfo;
+// Función auxiliar para calcular el crecimiento de una categoría
+function calculateGrowth(articles, categoryKey) {
+  // Agrupar por año
+  const yearlyCounts = {};
+  articles.forEach(article => {
+    if (!article.year) return;
+    (article.tags || []).forEach(tag => {
+      const tagLower = tag.toLowerCase();
+      if (tagLower.includes(categoryKey)) {
+        yearlyCounts[article.year] = (yearlyCounts[article.year] || 0) + 1;
+      }
+    });
+  });
+
+  const years = Object.keys(yearlyCounts).map(Number).sort();
+  if (years.length < 2) return 0;
+
+  const lastYear = years[years.length - 1];
+  const prevYear = years[years.length - 2];
+  const lastValue = yearlyCounts[lastYear];
+  const prevValue = yearlyCounts[prevYear];
+
+  if (!prevValue) return 0;
+  return ((lastValue - prevValue) / prevValue * 100).toFixed(1);
+}
+
+
+export function ResearchProgressRadialChart() {
+  const { articles } = useChatContext();
+  const [chartInfo, setChartInfo] = useState(null);
+
+  useEffect(() => {
+    const info = processRadialData(articles);
+    setChartInfo(info);
+  }, [articles]);
+
+  // ⛔ Evita destructurar si chartInfo aún es null
+  if (!chartInfo) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-white/60 text-sm">
+        Loading chart...
+      </div>
+    );
+  }
+
+  const {
+    data = [],
+    category = "",
+    description = "",
+    percentage = 0,
+    growth = 0,
+    totalArticles = 0
+  } = chartInfo || {};
 
   return (
     <div className="w-full h-full flex flex-col bg-gradient-to-b from-navy-blue/20 to-black/40 backdrop-blur-sm rounded-xl border border-white/20 shadow-xl overflow-hidden">
@@ -214,7 +263,7 @@ export function ResearchProgressRadialChart({ articles = [] }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default ResearchProgressRadialChart;

@@ -1,24 +1,35 @@
 import GraphViewer from "./GraphViewer";
-import StarBorder from '../../UI/starBorder.jsx'; 
-import GraphModal from '../rightSidebar/GraphModal.jsx';
-import ChartSelector from './charts.jsx';
-import { Expand } from 'lucide-react';
-import { useState, useEffect, memo } from 'react';
+import StarBorder from "../../UI/starBorder.jsx";
+import GraphModal from "../rightSidebar/GraphModal.jsx";
+import ChartSelector from "./charts.jsx";
+import { Expand } from "lucide-react";
+import { useState, useEffect, memo } from "react";
 
-const RectRight = memo(function RectRight({ graphData = null }) {
+const RectRight = memo(function RectRight({
+  graphData = null,
+  articlesData = null,
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localGraphData, setLocalGraphData] = useState(null);
+  const [localArticlesData, setLocalArticlesData] = useState(null);
 
   // Solo logear cuando realmente hay cambios en graphData
   useEffect(() => {
     if (graphData && graphData !== localGraphData) {
-      console.log('🔄 RectRight - Actualizando localGraphData:', graphData);
+      console.log("🔄 RectRight - Actualizando localGraphData:", graphData);
       setLocalGraphData(graphData);
+    } //
+    if (articlesData && articlesData !== localArticlesData) {
+      console.log(
+        "🔄 RectRight - Actualizando localArticlesData:",
+        articlesData
+      );
+      setLocalArticlesData(articlesData);
     }
-  }, [graphData, localGraphData]);
+  }, [graphData, localGraphData, articlesData, localArticlesData]);
 
   const handleViewLarge = () => {
-    console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData);
+    console.log("🔍 RectRight - Abriendo modal con datos:", localGraphData);
     setIsModalOpen(true);
   };
 
@@ -33,8 +44,8 @@ const RectRight = memo(function RectRight({ graphData = null }) {
         <div className="flex-1 p-2 rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl">
           <ChartSelector />
         </div>
-        
-        {/* Panel inferior con grafo */}
+
+        {/*sas Panel inferior con grafo */}
         <div className="flex-1 flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-sm shadow-xl">
           <div className="flex-1 px-2 pt-2">
             <GraphViewer graphData={localGraphData} />
@@ -53,7 +64,10 @@ const RectRight = memo(function RectRight({ graphData = null }) {
               speed="3s"
               onClick={handleViewLarge}
             >
-              <div className="flex items-center justify-center gap-2 font-bold" style={{fontFamily: 'var(--font-space-mono)'}}>
+              <div
+                className="flex items-center justify-center gap-2 font-bold"
+                style={{ fontFamily: "var(--font-space-mono)" }}
+              >
                 <Expand size={16} className="text-white" />
                 <span>View Full Size</span>
               </div>
@@ -62,8 +76,8 @@ const RectRight = memo(function RectRight({ graphData = null }) {
         </div>
       </div>
 
-      <GraphModal 
-        isOpen={isModalOpen} 
+      <GraphModal
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
         graphData={localGraphData}
       />
