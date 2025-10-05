@@ -10,6 +10,7 @@ export function useChat() {
     const [responseChat, setResponseChat] = useState(null);
     const [currentText, setCurrentText] = useState("");
     const [articles, setArticles] = useState([]);
+    const [relationshipGraph, setRelationshipGraph] = useState(null);
     const sendMessage = async (userMessage) => {
         // Add user message immediately
         const userMsg = { text: userMessage, sender: "user", timestamp: new Date() };
@@ -21,7 +22,9 @@ export function useChat() {
             setResponseChat(response);
             setArticles(response.related_articles || []);
             console.log('Respuesta del chat:', response);
-            console.log('Artículos relacionados:', response.related_articles || []);
+            setRelationshipGraph(response.relationship_graph || null);
+            console.log('relationship_graph:', response.relationship_graph);
+
             const botMsg = { 
                 text: response.answer || response.message || "Respuesta recibida", 
                 sender: "System", 
@@ -134,6 +137,8 @@ const getMessagesHistorical = async (historicalId) => {
         getMessagesHistorical,
         responseChat,
         currentText,
-        setCurrentText
+        setCurrentText,
+        setRelationshipGraph,
+        relationshipGraph
     };
 }
