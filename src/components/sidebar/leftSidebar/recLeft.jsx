@@ -287,7 +287,7 @@ export default function RecLeft({ onMinimizeChange }) {
                   <div className="flex-1 min-w-0">
                     <button
                       onClick={handleArticleClick}
-                      className="text-left w-full group/title "
+                      className="text-left w-full group/title cursor-pointer "
                       title={article.title} // Tooltip with full title
                     >
                       <p
