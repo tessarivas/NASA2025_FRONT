@@ -40,7 +40,17 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
   return (
     <div className="flex flex-col items-center justify-center w-full h-full max-w-md mx-auto">
       {/* Container with card styling */}
-      <div className="bg-royal-blue/10 backdrop-blur-md border border-royal-blue/20 rounded-2xl p-8 w-full shadow-2xl">
+      <StarBorder
+        as="div"
+        className="w-full"
+        color="white"
+        speed="8s"
+        thickness={2}
+        backgroundColor="royal-blue/10"
+        borderRadius="rounded-2xl"
+        borderColor="border-white/20"
+        height="p-8"
+      >
         {/* Title */}
         <div className="text-5xl mb-4 text-center" style={{ fontFamily: 'Zen Dots' }}>
           <GradientText
@@ -70,7 +80,7 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
           <div>
             <label 
               htmlFor="name" 
-              className="block text-sm font-medium text-white mb-2"
+              className="block text-sm font-medium text-white mb-2 text-start"
               style={{ fontFamily: 'Space Mono, monospace' }}
             >
               Name
@@ -90,7 +100,7 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
           <div>
             <label 
               htmlFor="email" 
-              className="block text-sm font-medium text-white mb-2"
+              className="block text-sm font-medium text-white mb-2 text-start"
               style={{ fontFamily: 'Space Mono, monospace' }}
             >
               Email
@@ -110,7 +120,7 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
           <div>
             <label 
               htmlFor="password" 
-              className="block text-sm font-medium text-white mb-2"
+              className="block text-sm font-medium text-white mb-2 text-start"
               style={{ fontFamily: 'Space Mono, monospace' }}
             >
               Password
@@ -172,7 +182,7 @@ export default function SignUpForm({ onToggleToSignIn, onCancel }) {
             Back to explore
           </button>
         </div>
-      </div>
+      </StarBorder>
     </div>
   );
 }

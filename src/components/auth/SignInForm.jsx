@@ -75,7 +75,7 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
           <div>
             <label 
               htmlFor="email" 
-              className="block text-sm font-medium text-white mb-2"
+              className="block text-sm font-medium text-white mb-2 text-start"
               style={{ fontFamily: 'Space Mono, monospace' }}
             >
               Email
@@ -86,7 +86,7 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
+              className="w-full px-4 py-3 rounded-lg bg-royal-blue/20 text-white  placeholder-white/50 border border-royal-blue/30 focus:outline-none focus:ring-2 focus:ring-blue backdrop-blur-sm transition-all duration-300"
               style={{ fontFamily: 'Space Mono, monospace' }}
               placeholder="your@email.com"
             />
@@ -95,7 +95,7 @@ export default function SignInForm({ onToggleToSignUp, onCancel }) {
           <div>
             <label 
               htmlFor="password" 
-              className="block text-sm font-medium text-white mb-2"
+              className="block text-sm font-medium text-white text-start mb-2"
               style={{ fontFamily: 'Space Mono, monospace' }}
             >
               Password
