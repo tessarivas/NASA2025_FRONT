@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import GradientText from '../GradientText';
 import { Send, Sparkles, Rocket } from 'lucide-react';
 
-export default function RecChat({ onResponse }) {
+export default function RecChat({ onResponse, initialMessage }) {
   const {
     messages,
     currentText,
@@ -11,14 +11,55 @@ export default function RecChat({ onResponse }) {
     sendMessage,
     loading,
     articles,
+    resetChat,
   } = useChat();
-
+  
+  const hasInitialMessageSent = useRef(false);
   const messagesEndRef = useRef(null);
+
+  // Send initial message if provided (only once)
+  useEffect(() => {
+    if (initialMessage && initialMessage.trim() && !hasInitialMessageSent.current) {
+      hasInitialMessageSent.current = true;
+      sendMessage(initialMessage.trim());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
+
+  // Listen for new chat events
+  useEffect(() => {
+    const handleNewChat = () => {
+      resetChat();
+      hasInitialMessageSent.current = false;
+    };
+
+    window.addEventListener('newChatStarted', handleNewChat);
+    
+    return () => {
+      window.removeEventListener('newChatStarted', handleNewChat);
+    };
+  }, [resetChat]);
 
   // Auto-scroll cuando hay nuevos mensajes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Interceptar respuestas para pasar datos al Dashboard
+  useEffect(() => {
+    if (onResponse) {
+      // Buscar el último mensaje que tenga rawData
+      const lastMessageWithData = messages
+        .slice()
+        .reverse()
+        .find(msg => msg.rawData?.relationship_graph);
+      
+      if (lastMessageWithData?.rawData?.relationship_graph) {
+        console.log("📤 RecChat - Pasando datos al Dashboard:", lastMessageWithData.rawData);
+        onResponse(lastMessageWithData.rawData);
+      }
+    }
+  }, [messages, onResponse]);
 
   const handleChat = async () => {
     if (currentText.trim()) {
@@ -39,7 +80,7 @@ export default function RecChat({ onResponse }) {
     <div className="h-full w-full relative rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-xs shadow-xl overflow-hidden">
       {/* Header - Posición absoluta top */}
       <div className="absolute top-0 left-0 right-0 h-16 p-4 border-b border-white/20 bg-navy-blue/20 backdrop-blur-xs z-10">
-        <div className="text-2xl text-center" style={{ fontFamily: "Zen Dots" }}>
+        <div className="text-2xl text-center" style={{ fontFamily: "var(--font-zen-dots)" }}>
           <GradientText
             colors={["#E26B40", "#FF7A33", "#FF4F11", "#D63A12", "#A6210A"]}
             animationSpeed={4.5}
@@ -54,13 +95,13 @@ export default function RecChat({ onResponse }) {
       <div className="absolute top-16 left-0 right-0 bottom-48 overflow-hidden">
         <div className="h-full overflow-y-auto p-4 chat-scroll">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center mix-blend-color-burn">
+            <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="mb-4">
-                <Rocket size={48} className="text-(--royal-blue) mx-auto" />
+                <Rocket size={48} className="text-royal-blue mx-auto" />
               </div>
               <p 
-                className="text-(--royal-blue) font-bold max-w-md leading-relaxed"
-                style={{ fontFamily: 'Space Mono, monospace' }}
+                className="text-royal-blue font-bold max-w-md leading-relaxed"
+                style={{ fontFamily: 'var(--font-space-mono)' }}
               >
                 Start exploring NASA's space bioscience research. Ask about microorganisms, plant growth in space, or any scientific topic.
               </p>
@@ -77,15 +118,15 @@ export default function RecChat({ onResponse }) {
                   <div
                     className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                       message.sender === "user"
-                        ? "bg-(--royal-blue) text-white"
+                        ? "bg-royal-blue text-white"
                         : message.isError
-                        ? "bg-(--hot-pink) text-white"
-                        : "bg-(--gray) text-white backdrop-blur-sm"
+                        ? "bg-hot-pink text-white"
+                        : "bg-gray text-white backdrop-blur-sm"
                     }`}
                   >
                     <p 
                       className="text-sm"
-                      style={{ fontFamily: 'Space Mono, monospace' }}
+                      style={{ fontFamily: 'var(--font-space-mono)' }}
                     >
                       {message.text}
                     </p>
@@ -97,10 +138,10 @@ export default function RecChat({ onResponse }) {
                   {/* Artículos específicos del mensaje (si los hay) */}
                   {message.sender === "system" && message.articles && message.articles.length > 0 && (
                     <div className="mt-3 max-w-xs lg:max-w-md">
-                      <div className="bg-(--royal-blue) backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
+                      <div className="bg-royal-blue/80 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
                         <h4 
                           className="text-sm font-semibold mb-2 text-blue-200 flex items-center gap-2"
-                          style={{ fontFamily: 'Space Mono, monospace' }}
+                          style={{ fontFamily: 'var(--font-space-mono)' }}
                         >
                           <Sparkles size={14} />
                           Related Articles ({message.articles.length})
@@ -112,15 +153,12 @@ export default function RecChat({ onResponse }) {
                               key={articleIndex}
                               className="bg-white/10 border border-white/20 rounded-lg p-2 hover:bg-white/15 transition-all duration-200"
                             >
-                              <a
-                                href={article.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <h5 
                                 className="text-blue-200 hover:text-blue-100 transition-colors text-xs font-medium leading-tight block"
-                                style={{ fontFamily: 'Space Mono, monospace' }}
+                                style={{ fontFamily: 'var(--font-space-mono)' }}
                               >
                                 {article.title}
-                              </a>
+                              </h5>
                               
                               {(article.year || article.authors) && (
                                 <div className="flex items-center justify-between text-xs text-white/60 mt-1">
@@ -147,29 +185,55 @@ export default function RecChat({ onResponse }) {
                     </div>
                   )}
 
-                  {/* Fallback para artículos globales */}
-                  {message.sender === "system" && !message.articles && articles && articles.map((article, idx) => (
-                    <div
-                      key={idx}
-                      className="mt-2 bg-(--royal-blue) backdrop-blur-sm p-3 rounded-lg inline-block text-left max-w-xs lg:max-w-md border border-blue-500/30"
-                    >
-                      <h4 
-                        className="text-sm font-semibold mb-1"
-                        style={{ fontFamily: 'Space Mono, monospace' }}
-                      >
-                        Related Articles:
-                      </h4>
-                      <a
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-200 hover:text-blue-100 transition-colors"
-                        style={{ fontFamily: 'Space Mono, monospace' }}
-                      >
-                        {article.title}
-                      </a>
+                  {/* MOSTRAR ARTÍCULOS GLOBALES - Para debugging */}
+                  {message.sender === "system" && !message.articles && articles && articles.length > 0 && (
+                    <div className="mt-3 max-w-xs lg:max-w-md">
+                      <div className="bg-royal-blue/80 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
+                        <h4 
+                          className="text-sm font-semibold mb-2 text-blue-200 flex items-center gap-2"
+                          style={{ fontFamily: 'var(--font-space-mono)' }}
+                        >
+                          <Sparkles size={14} />
+                          Related Articles ({articles.length})
+                        </h4>
+                        
+                        <div className="space-y-2">
+                          {articles.slice(0, 3).map((article, articleIndex) => (
+                            <div
+                              key={articleIndex}
+                              className="bg-white/10 border border-white/20 rounded-lg p-2 hover:bg-white/15 transition-all duration-200"
+                            >
+                              <h5 
+                                className="text-blue-200 hover:text-blue-100 transition-colors text-xs font-medium leading-tight block"
+                                style={{ fontFamily: 'var(--font-space-mono)' }}
+                              >
+                                {article.title}
+                              </h5>
+                              
+                              {(article.year || article.authors) && (
+                                <div className="flex items-center justify-between text-xs text-white/60 mt-1">
+                                  {article.year && <span>{article.year}</span>}
+                                  {article.authors && article.authors.length > 0 && (
+                                    <span className="truncate ml-2" title={article.authors.join(', ')}>
+                                      {article.authors[0]}{article.authors.length > 1 ? ' et al.' : ''}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          
+                          {articles.length > 3 && (
+                            <div className="text-center">
+                              <span className="text-xs text-blue-300">
+                                +{articles.length - 3} more articles
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               ))}
 
@@ -179,7 +243,7 @@ export default function RecChat({ onResponse }) {
                   <div className="inline-block bg-white/20 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
                     <p 
                       className="text-sm"
-                      style={{ fontFamily: 'Space Mono, monospace' }}
+                      style={{ fontFamily: 'var(--font-space-mono)' }}
                     >
                       Analyzing research... 
                       <span className="animate-pulse">✨</span>
@@ -202,7 +266,7 @@ export default function RecChat({ onResponse }) {
           <div className="text-center">
             <p 
               className="text-white/80 text-sm"
-              style={{ fontFamily: 'Space Mono, monospace' }}
+              style={{ fontFamily: 'var(--font-space-mono)' }}
             >
               What would you like to explore today?
             </p>
@@ -215,7 +279,7 @@ export default function RecChat({ onResponse }) {
                 <input
                   type="text"
                   className="w-full px-6 py-4 rounded-2xl border-2 border-white/20 bg-white/5 backdrop-blur-md text-white placeholder:text-white/50 focus:border-orange-500/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 text-base"
-                  style={{ fontFamily: 'Space Mono, monospace' }}
+                  style={{ fontFamily: 'var(--font-space-mono)' }}
                   placeholder="Ask about space biology, microorganisms, plant research..."
                   value={currentText}
                   onChange={(e) => setCurrentText(e.target.value)}
@@ -246,7 +310,7 @@ export default function RecChat({ onResponse }) {
           <div className="text-center">
             <p 
               className="text-white/50 text-xs"
-              style={{ fontFamily: 'Space Mono, monospace' }}
+              style={{ fontFamily: 'var(--font-space-mono)' }}
             >
               Powered by NASA's space bioscience research database
             </p>

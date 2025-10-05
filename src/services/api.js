@@ -135,21 +135,22 @@ export const favoritesAPI = {
 };
 
 export const chatApi = {
-  
-    chats: async (message) =>{
-    const response = await fetch(`${API_URL}/vertex-ai/structured-simple`,{
+  chats: async (message, userId, historicalId = null) => {
+    const response = await fetch(`${API_URL}/vertex-ai/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        'prompt': message
+        message: message,
+        user_id: userId,
+        historical_id: historicalId
       }),
-    } );
+    });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Error al enviar el mensaje');
+      throw new Error(error.message || 'Error sending message');
     }
 
     return response.json();
