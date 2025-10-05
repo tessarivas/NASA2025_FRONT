@@ -30,29 +30,88 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     }
   }, [isOpen]);
 
-  // Datos de fallback si no se proporcionan datos
+  // Datos de fallback MEJORADOS con más conexiones
   const defaultGraphData = {
     nodes: [
-      { id: "microgravity-plants", name: "Microgravity Effects on Plants", group: "Microgravity" },
-      { id: "zero-gravity-growth", name: "Plant Growth under Zero Gravity", group: "Microgravity" },
-      { id: "bone-density-loss", name: "Bone Density Loss in Space", group: "Microgravity" },
-      { id: "radiation-dna", name: "Radiation Damage in DNA", group: "Radiation" },
-      { id: "dna-repair", name: "DNA Repair Mechanisms", group: "Radiation" },
-      { id: "space-photosynthesis", name: "Photosynthesis in Space Crops", group: "Agriculture" },
-      { id: "led-systems", name: "LED Light Systems", group: "Agriculture" },
-      { id: "water-recycling", name: "Water Recycling Systems", group: "LifeSupport" },
+      { id: "microgravity-plants", name: "Microgravity Effects on Plants", group: "Microgravity", weight: 3 },
+      { id: "zero-gravity-growth", name: "Plant Growth under Zero Gravity", group: "Microgravity", weight: 2 },
+      { id: "bone-density-loss", name: "Bone Density Loss in Space", group: "Physiology", weight: 4 },
+      { id: "radiation-dna", name: "Radiation Damage in DNA", group: "Radiation", weight: 5 },
+      { id: "dna-repair", name: "DNA Repair Mechanisms", group: "Radiation", weight: 3 },
+      { id: "space-photosynthesis", name: "Photosynthesis in Space Crops", group: "Agriculture", weight: 4 },
+      { id: "led-systems", name: "LED Light Systems", group: "Agriculture", weight: 2 },
+      { id: "water-recycling", name: "Water Recycling Systems", group: "LifeSupport", weight: 3 },
+      { id: "oxygen-generation", name: "Oxygen Generation Systems", group: "LifeSupport", weight: 4 },
+      { id: "muscle-atrophy", name: "Muscle Atrophy Prevention", group: "Physiology", weight: 3 },
     ],
     links: [
-      { source: "microgravity-plants", target: "zero-gravity-growth", value: 3 },
-      { source: "radiation-dna", target: "dna-repair", value: 4 },
-      { source: "space-photosynthesis", target: "led-systems", value: 4 },
-      { source: "microgravity-plants", target: "space-photosynthesis", value: 3 },
-      { source: "radiation-dna", target: "water-recycling", value: 2 },
+      // Conexiones dentro de grupos
+      { source: "microgravity-plants", target: "zero-gravity-growth", value: 4, relationship: "same_field" },
+      { source: "radiation-dna", target: "dna-repair", value: 5, relationship: "cause_effect" },
+      { source: "space-photosynthesis", target: "led-systems", value: 4, relationship: "technology" },
+      { source: "water-recycling", target: "oxygen-generation", value: 3, relationship: "life_support" },
+      { source: "bone-density-loss", target: "muscle-atrophy", value: 3, relationship: "physiology" },
+      
+      // Conexiones entre grupos
+      { source: "microgravity-plants", target: "space-photosynthesis", value: 3, relationship: "plant_research" },
+      { source: "radiation-dna", target: "bone-density-loss", value: 2, relationship: "health_impact" },
+      { source: "led-systems", target: "oxygen-generation", value: 2, relationship: "environment" },
+      { source: "zero-gravity-growth", target: "muscle-atrophy", value: 2, relationship: "microgravity_effects" },
+      { source: "dna-repair", target: "water-recycling", value: 1, relationship: "safety_systems" },
+      
+      // Conexiones adicionales para mejor cohesión
+      { source: "space-photosynthesis", target: "oxygen-generation", value: 3, relationship: "oxygen_cycle" },
+      { source: "microgravity-plants", target: "bone-density-loss", value: 2, relationship: "microgravity_research" },
     ]
   };
 
-  // Usar datos proporcionados o datos por defecto
-  const currentGraphData = graphData || defaultGraphData;
+  // Función para convertir datos reales del backend - CORREGIDA
+  function convertRealGraphData(realData) {
+    console.log("🔍 Datos recibidos en GraphModal:", realData);
+    
+    // El graphData puede venir directamente como relationship_graph o estar anidado
+    let graphStructure = null;
+    
+    if (realData?.nodes && realData?.links) {
+      // Datos ya en formato correcto
+      graphStructure = realData;
+    } else if (realData?.relationship_graph?.nodes && realData?.relationship_graph?.links) {
+      // Datos anidados en relationship_graph
+      graphStructure = realData.relationship_graph;
+    } else {
+      console.warn("GraphModal - No se encontró estructura de grafo válida");
+      return null;
+    }
+
+    console.log("🕸️ Estructura de grafo encontrada:", graphStructure);
+
+    const nodes = graphStructure.nodes.map(node => ({
+      id: node.id,
+      name: node.label || node.name || `Research ${node.id}`,
+      group: node.category || node.type || node.group || "General",
+      weight: node.weight || Math.random() * 3 + 1,
+      articleTitle: node.article_title || node.label || node.name
+    }));
+
+    const links = graphStructure.links.map(link => ({
+      source: link.source,
+      target: link.target,
+      value: link.weight || link.value || Math.random() * 3 + 1,
+      relationship: link.relationship || link.type || "related"
+    }));
+
+    console.log("✅ Datos procesados - Nodos:", nodes.length, "Enlaces:", links.length);
+
+    return { nodes, links };
+  }
+
+  // Usar datos reales o fallback
+  const processedData = graphData ? convertRealGraphData(graphData) : null;
+  const currentGraphData = processedData || defaultGraphData;
+
+  console.log("🕸️ Graph Modal - Datos originales:", graphData);
+  console.log("🕸️ Graph Modal - Datos procesados:", processedData);
+  console.log("🕸️ Graph Modal - Datos finales:", currentGraphData);
 
   // Crear el grafo con D3
   useEffect(() => {
@@ -68,7 +127,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     // Obtener grupos únicos dinámicamente
     const uniqueGroups = [...new Set(currentGraphData.nodes.map(node => node.group))];
     
-    // Colores personalizados por categoría (expandible dinámicamente)
+    // Colores personalizados por categoría
     const colorPalette = ["#00B8EB", "#FF6B35", "#00D4AA", "#F63564", "#9B59B6", "#E67E22", "#1ABC9C", "#E74C3C"];
     const colorScale = d3.scaleOrdinal()
       .domain(uniqueGroups)
@@ -78,12 +137,31 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     const links = currentGraphData.links.map(d => ({...d}));
     const nodes = currentGraphData.nodes.map(d => ({...d}));
 
-    // Crear simulación de fuerzas
+    // SIMULACIÓN MEJORADA para evitar dispersión
     const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id(d => d.id).distance(80))
-      .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(25));
+      .force("link", d3.forceLink(links)
+        .id(d => d.id)
+        .distance(d => 60 + (d.value || 1) * 20) // Distancia basada en la fuerza de conexión
+        .strength(0.8) // Fuerza más alta para mantener conexiones
+      )
+      .force("charge", d3.forceManyBody()
+        .strength(d => -200 - (d.weight || 1) * 50) // Repulsión basada en peso
+      )
+      .force("center", d3.forceCenter(width / 2, height / 2)
+        .strength(0.1) // Fuerza de centrado más suave
+      )
+      .force("collision", d3.forceCollide()
+        .radius(d => 20 + (d.weight || 1) * 5) // Radio de colisión basado en peso
+        .strength(0.7)
+      )
+      // FUERZA ADICIONAL: mantener grupos juntos
+      .force("group", d3.forceX()
+        .x(d => {
+          const groupIndex = uniqueGroups.indexOf(d.group);
+          return (width / (uniqueGroups.length + 1)) * (groupIndex + 1);
+        })
+        .strength(0.05)
+      );
 
     // Crear SVG
     const svg = d3.select(containerRef.current)
@@ -112,84 +190,136 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         .attr("stop-color", colorScale(group));
     });
 
-    // Crear enlaces
+    // Crear enlaces MEJORADOS
     const link = svg.append("g")
-      .attr("stroke", "rgba(255, 255, 255, 0.4)")
-      .attr("stroke-opacity", 0.8)
+      .attr("stroke", "rgba(255, 255, 255, 0.3)")
+      .attr("stroke-opacity", 0.6)
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", d => Math.sqrt(d.value || 1) * 2);
+      .attr("stroke-width", d => Math.max(1, Math.sqrt(d.value || 1) * 1.5))
+      .style("cursor", "pointer");
 
-    // Crear nodos
+    // Crear nodos MEJORADOS con tamaño dinámico
     const node = svg.append("g")
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", 12)
+      .attr("r", d => Math.max(8, Math.min(18, 10 + (d.weight || 1) * 2))) // Tamaño basado en peso
       .attr("fill", d => `url(#gradient-${d.group.replace(/\s+/g, '-')})`)
       .attr("stroke", "#ffffff")
-      .attr("stroke-width", 2)
+      .attr("stroke-width", 1.5)
       .style("cursor", "pointer");
 
-    // Crear etiquetas de nodos
-    const labels = svg.append("g")
-      .selectAll("text")
-      .data(nodes)
-      .join("text")
-      .text(d => d.name)
-      .attr("font-size", "12px")
-      .attr("font-weight", "bold")
-      .attr("fill", "white")
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.35em")
-      .attr("font-family", "var(--font-space-mono)")
-      .style("text-shadow", "2px 2px 4px rgba(0,0,0,0.8)")
+    // Tooltip mejorado
+    const tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "graph-tooltip")
+      .style("position", "absolute")
+      .style("background", "rgba(0, 0, 0, 0.9)")
+      .style("color", "white")
+      .style("padding", "12px")
+      .style("border-radius", "8px")
+      .style("font-family", "var(--font-space-mono)")
+      .style("font-size", "12px")
+      .style("max-width", "250px")
+      .style("box-shadow", "0 4px 12px rgba(0,0,0,0.3)")
+      .style("border", "1px solid rgba(255,255,255,0.2)")
       .style("pointer-events", "none")
-      .style("opacity", 0);
+      .style("opacity", 0)
+      .style("z-index", 1000);
 
-    // Crear etiquetas de grupos
+    // Crear etiquetas de grupos MEJORADAS
     const groupLabels = svg.append("g")
       .selectAll("text")
       .data(d3.groups(nodes, d => d.group))
       .join("text")
       .text(d => d[0])
-      .attr("font-size", "16px")
+      .attr("font-size", "14px")
       .attr("font-weight", "bold")
       .attr("fill", d => colorScale(d[0]))
       .attr("text-anchor", "middle")
       .attr("font-family", "var(--font-zen-dots)")
       .style("text-shadow", "2px 2px 6px rgba(0,0,0,0.8)")
-      .style("pointer-events", "none");
+      .style("pointer-events", "none")
+      .style("opacity", 0.8);
 
-    // Interacciones
+    // Interacciones MEJORADAS
     node
       .on("mouseenter", function(event, d) {
+        // Efecto visual en el nodo
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", 16)
-          .attr("stroke-width", 3);
+          .attr("r", Math.max(12, Math.min(22, 14 + (d.weight || 1) * 2)))
+          .attr("stroke-width", 3)
+          .attr("stroke", "#FFD700");
         
-        labels.filter(label => label.id === d.id)
+        // Destacar conexiones
+        link
+          .style("opacity", l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.1)
+          .attr("stroke", l => (l.source.id === d.id || l.target.id === d.id) ? "#FFD700" : "rgba(255, 255, 255, 0.3)");
+        
+        // Mostrar tooltip
+        tooltip
+          .style("opacity", 1)
+          .html(`
+            <div>
+              <strong>${d.articleTitle || d.name}</strong><br/>
+              <span style="color: ${colorScale(d.group)}">${d.group}</span><br/>
+              ${d.weight ? `<small>Weight: ${d.weight.toFixed(1)}</small>` : ''}
+            </div>
+          `)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 10) + "px");
+      })
+      .on("mousemove", function(event) {
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 10) + "px");
+      })
+      .on("mouseleave", function(event, d) {
+        // Restaurar nodo
+        d3.select(this)
           .transition()
           .duration(200)
-          .style("opacity", 1);
+          .attr("r", Math.max(8, Math.min(18, 10 + (d.weight || 1) * 2)))
+          .attr("stroke-width", 1.5)
+          .attr("stroke", "#ffffff");
+        
+        // Restaurar conexiones
+        link
+          .style("opacity", 0.6)
+          .attr("stroke", "rgba(255, 255, 255, 0.3)");
+        
+        // Ocultar tooltip
+        tooltip.style("opacity", 0);
+      });
+
+    // Hover en enlaces
+    link
+      .on("mouseenter", function(event, d) {
+        d3.select(this)
+          .attr("stroke-width", Math.max(2, Math.sqrt(d.value || 1) * 2))
+          .attr("stroke", "#FFD700");
+        
+        if (d.relationship) {
+          tooltip
+            .style("opacity", 1)
+            .html(`<strong>Relationship:</strong> ${d.relationship}<br/><small>Strength: ${(d.value || 1).toFixed(1)}</small>`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+        }
       })
       .on("mouseleave", function(event, d) {
         d3.select(this)
-          .transition()
-          .duration(200)
-          .attr("r", 12)
-          .attr("stroke-width", 2);
+          .attr("stroke-width", Math.max(1, Math.sqrt(d.value || 1) * 1.5))
+          .attr("stroke", "rgba(255, 255, 255, 0.3)");
         
-        labels.filter(label => label.id === d.id)
-          .transition()
-          .duration(200)
-          .style("opacity", 0);
+        tooltip.style("opacity", 0);
       });
 
-    // Drag behavior
+    // Drag behavior MEJORADO
     const drag = d3.drag()
       .on("start", function(event, d) {
         if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -208,8 +338,14 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
     node.call(drag);
 
-    // Función tick
+    // Función tick OPTIMIZADA
     simulation.on("tick", () => {
+      // Constrain nodes to viewport con padding
+      nodes.forEach(d => {
+        d.x = Math.max(30, Math.min(width - 30, d.x));
+        d.y = Math.max(30, Math.min(height - 30, d.y));
+      });
+
       link
         .attr("x1", d => d.source.x)
         .attr("y1", d => d.source.y)
@@ -220,10 +356,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         .attr("cx", d => d.x)
         .attr("cy", d => d.y);
 
-      labels
-        .attr("x", d => d.x)
-        .attr("y", d => d.y - 20);
-
       // Actualizar posiciones de etiquetas de grupo
       groupLabels
         .attr("x", d => {
@@ -232,13 +364,23 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         })
         .attr("y", d => {
           const groupNodes = d[1];
-          return d3.mean(groupNodes, node => node.y) - 40;
+          return d3.mean(groupNodes, node => node.y) - 35;
         });
     });
+
+    // RALENTIZAR la simulación gradualmente para estabilizar
+    setTimeout(() => {
+      simulation.alphaTarget(0.1);
+    }, 1000);
+
+    setTimeout(() => {
+      simulation.alphaTarget(0);
+    }, 3000);
 
     // Cleanup
     return () => {
       simulation.stop();
+      tooltip.remove();
     };
   }, [modalState.panel, currentGraphData]);
 
@@ -286,11 +428,15 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-white" style={{fontFamily: 'var(--font-zen-dots)'}}>
-                  Research Network - Interactive View
+                  Research Network Graph
                 </h2>
-                {graphData && (
+                {graphData ? (
                   <span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full border border-green-500/30">
                     Live Data
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-sm rounded-full border border-orange-500/30">
+                    Sample Data
                   </span>
                 )}
               </div>
@@ -310,9 +456,10 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
           {/* Instructions */}
           <div className="absolute bottom-4 left-4 text-white/70 text-sm" style={{fontFamily: 'var(--font-space-mono)'}}>
-            <p>• Hover over nodes to see article titles</p>
-            <p>• Drag nodes to rearrange the network</p>
-            {!graphData && <p className="text-orange-400">• Using sample data (connect backend for live data)</p>}
+            <p>• <strong>Hover over nodes</strong> to see article details and connections</p>
+            <p>• <strong>Hover over lines</strong> to see relationships</p>
+            <p>• <strong>Drag nodes</strong> to rearrange the network</p>
+            {!graphData && <p className="text-orange-400 mt-1">💡 Send a chat message to get real research data!</p>}
           </div>
         </div>
       </div>

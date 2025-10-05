@@ -18,7 +18,7 @@ const RectRight = memo(function RectRight({ graphData = null }) {
   }, [graphData, localGraphData]);
 
   const handleViewLarge = () => {
-    console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData);
+    console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData || graphData);
     setIsModalOpen(true);
   };
 
@@ -65,7 +65,7 @@ const RectRight = memo(function RectRight({ graphData = null }) {
       <GraphModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal}
-        graphData={localGraphData}
+        graphData={localGraphData || graphData} // ← Asegurar que se pasen los datos más recientes
       />
     </>
   );
