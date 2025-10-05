@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { useChat } from "@/hooks/useChat";
 
 const ChatContext = createContext(null);
 
 export function ChatProvider({ children }) {
   const chat = useChat();
-  
+
   // Memoizar el contexto para evitar re-renders innecesarios
   const contextValue = useMemo(() => ({
     messages: chat.messages,

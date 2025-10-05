@@ -3,22 +3,18 @@ import StarBorder from '../../UI/starBorder.jsx';
 import GraphModal from '../rightSidebar/GraphModal.jsx';
 import ChartSelector from './charts.jsx';
 import { Expand } from 'lucide-react';
-import { useState, useEffect, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 
 const RectRight = memo(function RectRight({ graphData = null }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [localGraphData, setLocalGraphData] = useState(null);
 
-  // Solo logear cuando realmente hay cambios en graphData
+  // Log changes to graphData
   useEffect(() => {
-    if (graphData && graphData !== localGraphData) {
-      console.log('🔄 RectRight - Actualizando localGraphData:', graphData);
-      setLocalGraphData(graphData);
-    }
-  }, [graphData, localGraphData]);
+    console.log('🔍 RectRight - graphData changed:', graphData);
+    console.log('🔍 RectRight - graphData stringified:', JSON.stringify(graphData, null, 2));
+  }, [graphData]);
 
   const handleViewLarge = () => {
-    console.log('🔍 RectRight - Abriendo modal con datos:', localGraphData || graphData);
     setIsModalOpen(true);
   };
 
@@ -37,7 +33,7 @@ const RectRight = memo(function RectRight({ graphData = null }) {
         {/* Panel inferior con grafo */}
         <div className="flex-1 flex flex-col rounded-lg border border-white/20 bg-navy-blue/20 backdrop-blur-sm shadow-xl">
           <div className="flex-1 px-2 pt-2">
-            <GraphViewer graphData={localGraphData} />
+            <GraphViewer graphData={graphData} />
           </div>
           <div className="p-2">
             <StarBorder
@@ -65,7 +61,7 @@ const RectRight = memo(function RectRight({ graphData = null }) {
       <GraphModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal}
-        graphData={localGraphData || graphData} // ← Asegurar que se pasen los datos más recientes
+        graphData={graphData} // ← Asegurar que se pasen los datos más recientes
       />
     </>
   );

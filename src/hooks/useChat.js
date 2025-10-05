@@ -9,6 +9,7 @@ export function useChat() {
     const [responseChat, setResponseChat] = useState(null);
     const [articles, setArticles] = useState([]);
     const [relationshipGraph, setRelationshipGraph] = useState(null);
+    const [researchGaps, setResearchGaps] = useState([]);
 
     const sendMessage = useCallback(async (userMessage) => {
         // Add user message immediately
@@ -32,7 +33,6 @@ export function useChat() {
             // Send message using the new unified API
             const response = await chatApi.chats(userMessage, userId, existingHistoricalId);
             
-            console.log('Chat response:', response);
             setResponseChat(response);
 
             if (response.success) {
@@ -52,8 +52,32 @@ export function useChat() {
                 }
 
                 // Extract and set relationship graph from response
-                if (response.response.relationship_graph) {
-                    setRelationshipGraph(response.response.relationship_graph);
+                const relationshipGraph = response.response?.relationship_graph;
+                
+                if (relationshipGraph && 
+                    relationshipGraph.nodes && 
+                    relationshipGraph.links && 
+                    relationshipGraph.nodes.length > 0 && 
+                    relationshipGraph.links.length > 0) {
+                    
+                    console.log('🔥 SETTING RELATIONSHIP GRAPH:', JSON.stringify(relationshipGraph, null, 2));
+                    console.log('🔥 Nodes count:', relationshipGraph.nodes.length);
+                    console.log('🔥 Links count:', relationshipGraph.links.length);
+                    
+                    // Force a new object reference to trigger re-render with deep copy
+                    setRelationshipGraph({
+                        nodes: [...relationshipGraph.nodes.map(node => ({...node}))],
+                        links: [...relationshipGraph.links.map(link => ({...link}))]
+                    });
+                } else {
+                    console.log('⚠️ NO VALID RELATIONSHIP GRAPH IN RESPONSE');
+                    console.log('⚠️ Graph data received:', relationshipGraph);
+                    setRelationshipGraph(null);
+                }
+
+                // Extract and set research gaps from RAG response
+                if (response.response.research_gaps) {
+                    setResearchGaps(response.response.research_gaps);
                 }
 
                 // Update localStorage with historical_id (for new chats or existing ones)
@@ -95,6 +119,7 @@ export function useChat() {
             setMessages([]);
             setArticles([]);
             setRelationshipGraph(null);
+            setResearchGaps([]);
             
             const response = await historyAPI.getMessagesFromHistorical(historicalId);
             console.log('Mensajes del historial:', response);
@@ -106,7 +131,7 @@ export function useChat() {
             console.log('Mensajes raw del backend:', rawMessages);
 
             const formattedMessages = rawMessages.map((msgData) => {
-                const { rol, message, related_articles, relationship_graph } = msgData;
+                const { rol, message, related_articles, relationship_graph, research_gaps } = msgData;
                 console.log(`Mapeando mensaje: rol="${rol}" -> sender="${rol === "User" ? "user" : "system"}"`);
                 
                 const formattedMessage = {
@@ -121,7 +146,8 @@ export function useChat() {
                     formattedMessage.rawData = {
                         answer: message,
                         related_articles,
-                        relationship_graph
+                        relationship_graph,
+                        research_gaps
                     };
                 }
 
@@ -143,6 +169,9 @@ export function useChat() {
                 if (lastSystemMessage.rawData?.relationship_graph) {
                     setRelationshipGraph(lastSystemMessage.rawData.relationship_graph);
                 }
+                if (lastSystemMessage.rawData?.research_gaps) {
+                    setResearchGaps(lastSystemMessage.rawData.research_gaps);
+                }
             }
             
             // Invalidate history query to refresh the sidebar
@@ -160,6 +189,7 @@ export function useChat() {
         setResponseChat(null);
         setArticles([]);
         setRelationshipGraph(null);
+        setResearchGaps([]);
         // Clear historical_id from localStorage when starting a new chat
         localStorage.removeItem('historical_id');
         // Invalidate history query to refresh the sidebar when starting a new chat
@@ -173,6 +203,7 @@ export function useChat() {
         sendMessage,
         responseChat,
         relationshipGraph,
+        researchGaps,
         resetChat,
         articles,
         getMessagesHistorical

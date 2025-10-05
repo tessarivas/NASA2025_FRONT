@@ -8,26 +8,18 @@ import RecChat from "../components/chatbot/recChat.jsx";
 import RectRight from "../components/sidebar/rightSidebar/rectRight.jsx";
 import LiquidEther from "../components/UI/liquidEther.jsx";
 import Particles from "../components/Particles.jsx";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useChatContext } from "@/context/ChatContext";
 
 export default function Dashboard() {
   const [isLeftSidebarMinimized, setIsLeftSidebarMinimized] = useState(false);
-  const [graphData, setGraphData] = useState(null);
   const location = useLocation();
   const { relationshipGraph } = useChatContext();
 
   const handleMinimizeChange = useCallback((isMinimized) => {
     setIsLeftSidebarMinimized(isMinimized);
   }, []);
-
-  // Actualizar graphData solo cuando relationshipGraph realmente cambie
-  useEffect(() => {
-    if (relationshipGraph && relationshipGraph !== graphData) {
-      setGraphData(relationshipGraph);
-    }
-  }, [relationshipGraph, graphData]);
 
   // Memoizar el initialMessage para evitar re-renders
   const memoizedInitialMessage = useMemo(() => {
@@ -113,7 +105,7 @@ export default function Dashboard() {
             maxSize={35}
           >
             <div className="h-full">
-              <RectRight graphData={graphData} />
+              <RectRight graphData={relationshipGraph} />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -1,49 +1,48 @@
 import React, { useEffect, useRef, memo } from "react";
 import * as d3 from "d3";
 
+// Datos de fallback si no se proporcionan datos
+const defaultGraphData = {
+  nodes: [
+    { id: "A1", name: "Microgravity Effects", group: "Microgravity" },
+    { id: "A2", name: "Plant Growth", group: "Microgravity" },
+    { id: "A3", name: "Bone Density Loss", group: "Microgravity" },
+    { id: "B1", name: "Radiation Damage", group: "Radiation" },
+    { id: "B2", name: "DNA Repair", group: "Radiation" },
+    { id: "B3", name: "Cosmic Ray Shield", group: "Radiation" },
+    { id: "C1", name: "Photosynthesis", group: "Agriculture" },
+    { id: "C2", name: "LED Systems", group: "Agriculture" },
+    { id: "C3", name: "Oxygen Production", group: "Agriculture" },
+    { id: "D1", name: "Water Recycling", group: "LifeSupport" },
+    { id: "D2", name: "Air Purification", group: "LifeSupport" },
+  ],
+  links: [
+    { source: "A1", target: "A2", value: 2 },
+    { source: "A2", target: "A3", value: 2 },
+    { source: "B1", target: "B2", value: 2 },
+    { source: "B2", target: "B3", value: 2 },
+    { source: "C1", target: "C2", value: 2 },
+    { source: "C2", target: "C3", value: 2 },
+    { source: "D1", target: "D2", value: 2 },
+    { source: "A1", target: "C1", value: 1 },
+    { source: "B1", target: "D1", value: 1 },
+    { source: "C3", target: "D2", value: 1 },
+  ],
+};
+
 const GraphViewer = memo(function GraphViewer({ graphData = null }) {
   const containerRef = useRef(null);
-
-  // Solo logear cuando realmente hay datos nuevos
-  useEffect(() => {
-    if (graphData) {
-      console.log('📊 GraphViewer - Datos recibidos:', graphData);
-    }
-  }, [graphData]);
-
-  // Datos de fallback si no se proporcionan datos
-  const defaultGraphData = {
-    nodes: [
-      { id: "A1", name: "Microgravity Effects", group: "Microgravity" },
-      { id: "A2", name: "Plant Growth", group: "Microgravity" },
-      { id: "A3", name: "Bone Density Loss", group: "Microgravity" },
-      { id: "B1", name: "Radiation Damage", group: "Radiation" },
-      { id: "B2", name: "DNA Repair", group: "Radiation" },
-      { id: "B3", name: "Cosmic Ray Shield", group: "Radiation" },
-      { id: "C1", name: "Photosynthesis", group: "Agriculture" },
-      { id: "C2", name: "LED Systems", group: "Agriculture" },
-      { id: "C3", name: "Oxygen Production", group: "Agriculture" },
-      { id: "D1", name: "Water Recycling", group: "LifeSupport" },
-      { id: "D2", name: "Air Purification", group: "LifeSupport" },
-    ],
-    links: [
-      { source: "A1", target: "A2", value: 2 },
-      { source: "A2", target: "A3", value: 2 },
-      { source: "B1", target: "B2", value: 2 },
-      { source: "B2", target: "B3", value: 2 },
-      { source: "C1", target: "C2", value: 2 },
-      { source: "C2", target: "C3", value: 2 },
-      { source: "D1", target: "D2", value: 2 },
-      { source: "A1", target: "C1", value: 1 },
-      { source: "B1", target: "D1", value: 1 },
-      { source: "C3", target: "D2", value: 1 },
-    ],
-  };
 
   // Función para validar y limpiar datos del grafo
   const validateGraphData = (data) => {
     if (!data || !data.nodes || !data.links) {
       console.warn('GraphViewer - Datos de grafo inválidos:', data);
+      return null;
+    }
+
+    // Si los arrays están vacíos, retornar null para usar datos por defecto
+    if (data.nodes.length === 0 || data.links.length === 0) {
+      console.warn('GraphViewer - Datos de grafo vacíos');
       return null;
     }
 
@@ -74,22 +73,76 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
       return true;
     });
 
+    // Verificar conectividad y arreglar nodos aislados
+    const connectedNodeIds = new Set();
+    validLinks.forEach(link => {
+      connectedNodeIds.add(link.source);
+      connectedNodeIds.add(link.target);
+    });
+    
+    const isolatedNodes = validNodes.filter(node => !connectedNodeIds.has(node.id));
+    
+    if (isolatedNodes.length > 0) {
+      console.warn('GraphViewer - Nodos aislados encontrados:', isolatedNodes.map(n => n.id));
+      
+      // Conectar nodos aislados al nodo más relacionado (por grupo)
+      isolatedNodes.forEach(isolatedNode => {
+        const sameGroupNodes = validNodes.filter(n => 
+          n.group === isolatedNode.group && n.id !== isolatedNode.id && connectedNodeIds.has(n.id)
+        );
+        
+        if (sameGroupNodes.length > 0) {
+          // Conectar al primer nodo del mismo grupo
+          validLinks.push({
+            source: isolatedNode.id,
+            target: sameGroupNodes[0].id,
+            value: 1
+          });
+          console.log(`GraphViewer - Conectado nodo aislado ${isolatedNode.id} a ${sameGroupNodes[0].id}`);
+        } else if (validNodes.length > 1) {
+          // Si no hay nodos del mismo grupo, conectar al primer nodo disponible
+          const firstConnectedNode = Array.from(connectedNodeIds)[0];
+          if (firstConnectedNode) {
+            validLinks.push({
+              source: isolatedNode.id,
+              target: firstConnectedNode,
+              value: 1
+            });
+            console.log(`GraphViewer - Conectado nodo aislado ${isolatedNode.id} a ${firstConnectedNode}`);
+          }
+        }
+      });
+    }
+
+    // Si después de validar no quedan nodos o links, retornar null
+    if (validNodes.length === 0 || validLinks.length === 0) {
+      console.warn('GraphViewer - No hay datos válidos después de la validación');
+      return null;
+    }
+
     return {
       nodes: validNodes,
       links: validLinks
     };
   };
 
-  // Usar datos proporcionados o datos por defecto, con validación
-  const rawGraphData = graphData || defaultGraphData;
-  const currentGraphData = validateGraphData(rawGraphData) || defaultGraphData;
-  
-  console.log('🎨 GraphViewer - Datos que se van a usar:', currentGraphData);
-  console.log('🔹 GraphViewer - ¿Usando datos reales?', !!graphData);
-
   useEffect(() => {
     console.log('⚡ GraphViewer - useEffect ejecutado');
-    console.log('📥 GraphViewer - currentGraphData en useEffect:', currentGraphData);
+    console.log('📊 GraphViewer - graphData recibido:', JSON.stringify(graphData, null, 2));
+    console.log('📊 GraphViewer - graphData type:', typeof graphData);
+    console.log('📊 GraphViewer - graphData keys:', graphData ? Object.keys(graphData) : 'null');
+    console.log('📊 GraphViewer - graphData.nodes:', graphData?.nodes);
+    console.log('📊 GraphViewer - graphData.links:', graphData?.links);
+    
+    // Usar datos proporcionados o datos por defecto, con validación
+    const validatedData = graphData ? validateGraphData(graphData) : null;
+    const currentGraphData = validatedData || defaultGraphData;
+    
+    console.log('🎨 GraphViewer - Datos validados:', validatedData ? 'VÁLIDOS' : 'USANDO DEFAULT');
+    console.log('🎨 GraphViewer - Datos finales a usar:', JSON.stringify(currentGraphData, null, 2));
+    console.log('🔹 GraphViewer - ¿Usando datos reales?', !!validatedData);
+    console.log('🔹 GraphViewer - Nodes count:', currentGraphData.nodes?.length);
+    console.log('🔹 GraphViewer - Links count:', currentGraphData.links?.length);
     
     if (!containerRef.current) {
       console.log('❌ GraphViewer - containerRef.current es null');
@@ -119,11 +172,11 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
     const nodes = currentGraphData.nodes.map((d) => ({ ...d }));
 
     try {
-      // Crear simulación de fuerzas - ajustada para espacio pequeño
+      // Crear simulación de fuerzas - ajustada para espacio pequeño con menos interconexión
       const simulation = d3
         .forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id((d) => d.id).distance(40))
-        .force("charge", d3.forceManyBody().strength(-150))
+        .force("link", d3.forceLink(links).id((d) => d.id).distance(60)) // Aumentado de 40 a 60
+        .force("charge", d3.forceManyBody().strength(-100)) // Reducido de -150 a -100
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("collision", d3.forceCollide().radius(15))
         .force("bounds", () => {
@@ -140,7 +193,13 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .style("background", "transparent");
+      .style("background", "transparent")
+      .on("click", function(event) {
+        // Cerrar tooltip al hacer click en el fondo
+        if (event.target === this) {
+          d3.select(containerRef.current).select(".graph-tooltip").style("visibility", "hidden");
+        }
+      });
 
     // Crear gradientes para los nodos dinámicamente
     const defs = svg.append("defs");
@@ -173,13 +232,20 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
       .attr("stroke-width", (d) => Math.sqrt(d.value || 1))
       .attr("stroke-opacity", 0.6);
 
-    // Crear nodos
+    // Crear nodos con tamaño variable (centro más grande)
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
     const node = svg
       .append("g")
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", 6)
+      .attr("r", (d) => {
+        // Calcular distancia del centro para hacer el nodo central más grande
+        const distance = Math.sqrt(Math.pow(d.x - centerX, 2) + Math.pow(d.y - centerY, 2));
+        return distance < 50 ? 8 : 6; // Nodo central más grande
+      })
       .attr("fill", (d) => `url(#mini-gradient-${d.group.replace(/\s+/g, '-')})`)
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 1)
@@ -239,6 +305,10 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
         labels.filter((label) => label.id === d.id).transition().duration(150).style("opacity", 0);
         link.transition().duration(150).attr("stroke-opacity", 0.6).attr("stroke-width", (d) => Math.sqrt(d.value || 1));
         node.transition().duration(150).style("opacity", 1);
+      })
+      .on("click", function (event) {
+        event.stopPropagation();
+        // Click functionality removed - details only available in full graph view
       });
 
     // Drag behavior
@@ -306,7 +376,7 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
         .style("text-align", "center")
         .html("Error loading graph<br/>Check console for details");
     }
-  }, [currentGraphData]);
+  }, [graphData]); // Changed to depend on graphData directly
 
   return (
     <div className="w-full h-[300px] bg-black/60 rounded-xl p-2 relative border border-white/20 overflow-hidden">

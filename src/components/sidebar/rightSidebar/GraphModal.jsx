@@ -28,7 +28,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
         }, 200);
       }, 100);
     }
-  }, [isOpen]);
+  }, [isOpen, modalState.show]);
 
   // Datos de fallback MEJORADOS con más conexiones
   const defaultGraphData = {
@@ -113,9 +113,85 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
   console.log("🕸️ Graph Modal - Datos procesados:", processedData);
   console.log("🕸️ Graph Modal - Datos finales:", currentGraphData);
 
+  // Validar y limpiar datos del grafo
+  const validateGraphData = (data) => {
+    if (!data || !data.nodes || !data.links) return defaultGraphData;
+    
+    const nodes = data.nodes || [];
+    const nodeIds = new Set(nodes.map(node => node.id));
+    
+    console.log('Available node IDs:', Array.from(nodeIds));
+    
+    // Filtrar enlaces que solo referencien nodos existentes
+    const validLinks = data.links.filter(link => {
+      const sourceExists = nodeIds.has(link.source);
+      const targetExists = nodeIds.has(link.target);
+      
+      if (!sourceExists) {
+        console.warn(`Link source not found: ${link.source}`);
+      }
+      if (!targetExists) {
+        console.warn(`Link target not found: ${link.target}`);
+      }
+      
+      return sourceExists && targetExists;
+    });
+    
+    // Verificar conectividad - encontrar nodos aislados
+    const connectedNodeIds = new Set();
+    validLinks.forEach(link => {
+      connectedNodeIds.add(link.source);
+      connectedNodeIds.add(link.target);
+    });
+    
+    const isolatedNodes = nodes.filter(node => !connectedNodeIds.has(node.id));
+    
+    if (isolatedNodes.length > 0) {
+      console.warn('Isolated nodes found:', isolatedNodes.map(n => n.id));
+      
+      // Conectar nodos aislados al nodo más relacionado (por grupo)
+      isolatedNodes.forEach(isolatedNode => {
+        const sameGroupNodes = nodes.filter(n => 
+          n.group === isolatedNode.group && n.id !== isolatedNode.id && connectedNodeIds.has(n.id)
+        );
+        
+        if (sameGroupNodes.length > 0) {
+          // Conectar al primer nodo del mismo grupo
+          validLinks.push({
+            source: isolatedNode.id,
+            target: sameGroupNodes[0].id,
+            value: 1
+          });
+          console.log(`Connected isolated node ${isolatedNode.id} to ${sameGroupNodes[0].id}`);
+        } else if (nodes.length > 1) {
+          // Si no hay nodos del mismo grupo, conectar al primer nodo disponible
+          const firstConnectedNode = Array.from(connectedNodeIds)[0];
+          if (firstConnectedNode) {
+            validLinks.push({
+              source: isolatedNode.id,
+              target: firstConnectedNode,
+              value: 1
+            });
+            console.log(`Connected isolated node ${isolatedNode.id} to ${firstConnectedNode}`);
+          }
+        }
+      });
+    }
+    
+    console.log(`Filtered ${data.links.length - validLinks.length} invalid links`);
+    console.log('Valid links:', validLinks);
+    
+    return {
+      nodes: nodes,
+      links: validLinks
+    };
+  };
+
+  const validatedGraphData = validateGraphData(currentGraphData);
+
   // Crear el grafo con D3
   useEffect(() => {
-    if (!containerRef.current || !modalState.panel || !currentGraphData) return;
+    if (!containerRef.current || !modalState.panel || !validatedGraphData) return;
 
     // Limpiar contenedor
     d3.select(containerRef.current).selectAll("*").remove();
@@ -125,7 +201,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     const height = containerRect.height;
 
     // Obtener grupos únicos dinámicamente
-    const uniqueGroups = [...new Set(currentGraphData.nodes.map(node => node.group))];
+    const uniqueGroups = [...new Set(validatedGraphData.nodes.map(node => node.group))];
     
     // Colores personalizados por categoría
     const colorPalette = ["#00B8EB", "#FF6B35", "#00D4AA", "#F63564", "#9B59B6", "#E67E22", "#1ABC9C", "#E74C3C"];
@@ -134,34 +210,15 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .range(colorPalette.slice(0, uniqueGroups.length));
 
     // Copiar datos para no mutar los originales
-    const links = currentGraphData.links.map(d => ({...d}));
-    const nodes = currentGraphData.nodes.map(d => ({...d}));
+    const links = validatedGraphData.links.map(d => ({...d}));
+    const nodes = validatedGraphData.nodes.map(d => ({...d}));
 
     // SIMULACIÓN MEJORADA para evitar dispersión
     const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links)
-        .id(d => d.id)
-        .distance(d => 60 + (d.value || 1) * 20) // Distancia basada en la fuerza de conexión
-        .strength(0.8) // Fuerza más alta para mantener conexiones
-      )
-      .force("charge", d3.forceManyBody()
-        .strength(d => -200 - (d.weight || 1) * 50) // Repulsión basada en peso
-      )
-      .force("center", d3.forceCenter(width / 2, height / 2)
-        .strength(0.1) // Fuerza de centrado más suave
-      )
-      .force("collision", d3.forceCollide()
-        .radius(d => 20 + (d.weight || 1) * 5) // Radio de colisión basado en peso
-        .strength(0.7)
-      )
-      // FUERZA ADICIONAL: mantener grupos juntos
-      .force("group", d3.forceX()
-        .x(d => {
-          const groupIndex = uniqueGroups.indexOf(d.group);
-          return (width / (uniqueGroups.length + 1)) * (groupIndex + 1);
-        })
-        .strength(0.05)
-      );
+      .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+      .force("charge", d3.forceManyBody().strength(-200))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("collision", d3.forceCollide().radius(25));
 
     // Crear SVG
     const svg = d3.select(containerRef.current)
@@ -170,7 +227,13 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
       .style("max-width", "100%")
-      .style("height", "auto");
+      .style("height", "auto")
+      .on("click", function(event) {
+        // Cerrar tooltip al hacer click en el fondo
+        if (event.target === this) {
+          d3.select(containerRef.current).select(".graph-tooltip").style("visibility", "hidden");
+        }
+      });
 
     // Crear gradientes para los nodos dinámicamente
     const defs = svg.append("defs");
@@ -221,9 +284,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       .style("padding", "12px")
       .style("border-radius", "8px")
       .style("font-family", "var(--font-space-mono)")
-      .style("font-size", "12px")
-      .style("max-width", "250px")
-      .style("box-shadow", "0 4px 12px rgba(0,0,0,0.3)")
       .style("border", "1px solid rgba(255,255,255,0.2)")
       .style("pointer-events", "none")
       .style("opacity", 0)
@@ -231,7 +291,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
     // Crear etiquetas de grupos MEJORADAS
     const groupLabels = svg.append("g")
-      .selectAll("text")
       .data(d3.groups(nodes, d => d.group))
       .join("text")
       .text(d => d[0])
@@ -382,7 +441,7 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       simulation.stop();
       tooltip.remove();
     };
-  }, [modalState.panel, currentGraphData]);
+  }, [modalState.panel, validatedGraphData]);
 
   // Cerrar modal con Escape
   useEffect(() => {
