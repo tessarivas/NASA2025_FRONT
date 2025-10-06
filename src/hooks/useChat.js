@@ -118,7 +118,7 @@ export function useChat() {
                 ? response
                 : response.messages || response.data || [];
             const formattedMessages = rawMessages.map((msgData) => {
-                const { rol, message, related_articles, relationship_graph } = msgData;
+                const { rol, message, related_articles, relationship_graph, research_gaps } = msgData;
                 const formattedMessage = {
                     sender: rol === "User" ? "user" : "system", // Cambiar a "system" para consistencia
                     text: message,
@@ -139,6 +139,7 @@ export function useChat() {
                 return formattedMessage;
             });
 
+            console.log('Formatted messages:', formattedMessages);
             setMessages(formattedMessages);
             // Set global articles and graph from the last system message
             const lastSystemMessage = formattedMessages
