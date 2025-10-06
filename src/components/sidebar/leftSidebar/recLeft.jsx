@@ -19,12 +19,15 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 import { useChatContext } from "@/context/ChatContext";
+import { useNavigate, useLocation } from "react-router-dom";
 import PromptSuggestions from "./PromptSuggestions"; // ← IMPORT NUEVO
 
 export default function RecLeft({ onMinimizeChange }) {
   const { getMessagesHistorical, resetChat, sendMessage } = useChatContext(); // ← Ya tienes sendMessage aquí
   const { user, logout } = useCurrentUser();
   const { removeFromFavorites, isRemovingFromFavorites } = useFavorites();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMinimized, setIsMinimized] = useState(false);
   const [currentView, setCurrentView] = useState("menu"); // 'menu', 'history', 'favorites'
   const [deletingHistoryId, setDeletingHistoryId] = useState(null); // Track which history is being deleted
@@ -93,6 +96,12 @@ export default function RecLeft({ onMinimizeChange }) {
   const handleSelectHistory = (id) => {
     getMessagesHistorical(id);
     localStorage.setItem("historical_id", id);
+    
+    // Si no estamos en el dashboard, navegar allí
+    if (location.pathname !== '/dashboard') {
+      console.log('Navigating to dashboard from:', location.pathname);
+      navigate('/dashboard');
+    }
   };
 
   const handleNewChat = () => {
