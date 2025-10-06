@@ -19,7 +19,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 import { useChatContext } from "@/context/ChatContext";
-import PromptSuggestions from "./PromptSuggestions"; // ← IMPORT NUEVO
+import PromptSuggestions from "./promptSuggestions" // ← IMPORT NUEVO
 
 export default function RecLeft({ onMinimizeChange }) {
   const { getMessagesHistorical, resetChat, sendMessage } = useChatContext(); // ← Ya tienes sendMessage aquí
