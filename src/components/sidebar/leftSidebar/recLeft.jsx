@@ -13,13 +13,12 @@ import {
   X,
   Plus,
   Check,
-  Lightbulb,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { historyAPI, favoritesAPI } from "../../../services/api";
 import { useChatContext } from "@/context/ChatContext";
-import PromptSuggestions from "./promptSuggestions" // ← IMPORT NUEVO
+import PromptSuggestions from "./PromptSuggestions"
 
 export default function RecLeft({ onMinimizeChange }) {
   const { getMessagesHistorical, resetChat, sendMessage } = useChatContext(); // ← Ya tienes sendMessage aquí
@@ -372,13 +371,6 @@ export default function RecLeft({ onMinimizeChange }) {
             title="Favorites"
           >
             <Star className="w-5 h-5 text-orange-400 transition-all duration-200" />
-          </button>
-          <button
-            onClick={() => handleViewChange("recommendations")}
-            className="w-full h-10 rounded-lg bg-blue-900/40 backdrop-blur-sm shadow-md hover:bg-blue-900/60 transition-all duration-300 ease-out flex items-center justify-center cursor-pointer transform hover:scale-105 active:scale-95"
-            title="Recommendations"
-          >
-            <Lightbulb className="w-5 h-5 text-purple-400 transition-all duration-200" />
           </button>
         </div>
 
