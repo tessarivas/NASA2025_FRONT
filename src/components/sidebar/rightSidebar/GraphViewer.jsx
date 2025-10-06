@@ -36,13 +36,11 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
   // Función para validar y limpiar datos del grafo
   const validateGraphData = (data) => {
     if (!data || !data.nodes || !data.links) {
-      console.warn('GraphViewer - Datos de grafo inválidos:', data);
       return null;
     }
 
     // Si los arrays están vacíos, retornar null para usar datos por defecto
     if (data.nodes.length === 0 || data.links.length === 0) {
-      console.warn('GraphViewer - Datos de grafo vacíos');
       return null;
     }
 
@@ -54,20 +52,12 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
       const sourceExists = nodeIds.has(link.source);
       const targetExists = nodeIds.has(link.target);
       
-      if (!sourceExists) {
-        console.warn(`GraphViewer - Nodo source no encontrado: ${link.source}`);
-      }
-      if (!targetExists) {
-        console.warn(`GraphViewer - Nodo target no encontrado: ${link.target}`);
-      }
-      
       return sourceExists && targetExists;
     });
 
     // Validar que los nodos tengan las propiedades requeridas
     const validNodes = data.nodes.filter(node => {
       if (!node.id || !node.name || !node.group) {
-        console.warn('GraphViewer - Nodo inválido:', node);
         return false;
       }
       return true;
@@ -83,8 +73,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
     const isolatedNodes = validNodes.filter(node => !connectedNodeIds.has(node.id));
     
     if (isolatedNodes.length > 0) {
-      console.warn('GraphViewer - Nodos aislados encontrados:', isolatedNodes.map(n => n.id));
-      
       // Conectar nodos aislados al nodo más relacionado (por grupo)
       isolatedNodes.forEach(isolatedNode => {
         const sameGroupNodes = validNodes.filter(n => 
@@ -98,7 +86,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
             target: sameGroupNodes[0].id,
             value: 1
           });
-          console.log(`GraphViewer - Conectado nodo aislado ${isolatedNode.id} a ${sameGroupNodes[0].id}`);
         } else if (validNodes.length > 1) {
           // Si no hay nodos del mismo grupo, conectar al primer nodo disponible
           const firstConnectedNode = Array.from(connectedNodeIds)[0];
@@ -108,7 +95,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
               target: firstConnectedNode,
               value: 1
             });
-            console.log(`GraphViewer - Conectado nodo aislado ${isolatedNode.id} a ${firstConnectedNode}`);
           }
         }
       });
@@ -116,7 +102,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
 
     // Si después de validar no quedan nodos o links, retornar null
     if (validNodes.length === 0 || validLinks.length === 0) {
-      console.warn('GraphViewer - No hay datos válidos después de la validación');
       return null;
     }
 
@@ -344,9 +329,6 @@ const GraphViewer = memo(function GraphViewer({ graphData = null }) {
     };
     
     } catch (error) {
-      console.error('GraphViewer - Error al crear el grafo:', error);
-      console.error('GraphViewer - Datos que causaron el error:', currentGraphData);
-      
       // Mostrar mensaje de error en el contenedor
       d3.select(containerRef.current)
         .append("div")

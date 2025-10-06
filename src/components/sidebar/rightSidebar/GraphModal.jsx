@@ -67,8 +67,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
 
   // Función para convertir datos reales del backend - CORREGIDA
   function convertRealGraphData(realData) {
-    console.log("🔍 Datos recibidos en GraphModal:", realData);
-    
     // El graphData puede venir directamente como relationship_graph o estar anidado
     let graphStructure = null;
     
@@ -79,11 +77,8 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       // Datos anidados en relationship_graph
       graphStructure = realData.relationship_graph;
     } else {
-      console.warn("GraphModal - No se encontró estructura de grafo válida");
       return null;
     }
-
-    console.log("🕸️ Estructura de grafo encontrada:", graphStructure);
 
     const nodes = graphStructure.nodes.map(node => ({
       id: node.id,
@@ -106,19 +101,12 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
       relationship: link.relationship || link.type || "related"
     }));
 
-    console.log("✅ Datos procesados - Nodos:", nodes.length, "Enlaces:", links.length);
-    console.log("✅ Sample node:", nodes[0]);
-
     return { nodes, links };
   }
 
   // Usar datos reales o fallback
   const processedData = graphData ? convertRealGraphData(graphData) : null;
   const currentGraphData = processedData || defaultGraphData;
-
-  console.log("🕸️ Graph Modal - Datos originales:", graphData);
-  console.log("🕸️ Graph Modal - Datos procesados:", processedData);
-  console.log("🕸️ Graph Modal - Datos finales:", currentGraphData);
 
   // Validar y limpiar datos del grafo
   const validateGraphData = (data) => {
@@ -127,19 +115,10 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     const nodes = data.nodes || [];
     const nodeIds = new Set(nodes.map(node => node.id));
     
-    console.log('Available node IDs:', Array.from(nodeIds));
-    
     // Filtrar enlaces que solo referencien nodos existentes
     const validLinks = data.links.filter(link => {
       const sourceExists = nodeIds.has(link.source);
       const targetExists = nodeIds.has(link.target);
-      
-      if (!sourceExists) {
-        console.warn(`Link source not found: ${link.source}`);
-      }
-      if (!targetExists) {
-        console.warn(`Link target not found: ${link.target}`);
-      }
       
       return sourceExists && targetExists;
     });
@@ -154,8 +133,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
     const isolatedNodes = nodes.filter(node => !connectedNodeIds.has(node.id));
     
     if (isolatedNodes.length > 0) {
-      console.warn('Isolated nodes found:', isolatedNodes.map(n => n.id));
-      
       // Conectar nodos aislados al nodo más relacionado (por grupo)
       isolatedNodes.forEach(isolatedNode => {
         const sameGroupNodes = nodes.filter(n => 
@@ -169,7 +146,6 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
             target: sameGroupNodes[0].id,
             value: 1
           });
-          console.log(`Connected isolated node ${isolatedNode.id} to ${sameGroupNodes[0].id}`);
         } else if (nodes.length > 1) {
           // Si no hay nodos del mismo grupo, conectar al primer nodo disponible
           const firstConnectedNode = Array.from(connectedNodeIds)[0];
@@ -179,14 +155,10 @@ const GraphModal = ({ isOpen, onClose, graphData = null }) => {
               target: firstConnectedNode,
               value: 1
             });
-            console.log(`Connected isolated node ${isolatedNode.id} to ${firstConnectedNode}`);
           }
         }
       });
     }
-    
-    console.log(`Filtered ${data.links.length - validLinks.length} invalid links`);
-    console.log('Valid links:', validLinks);
     
     return {
       nodes: nodes,

@@ -139,8 +139,6 @@ export default function RecLeft({ onMinimizeChange }) {
 
   // Función para manejar prompts automáticos - NUEVA
   const handleSendPrompt = (prompt) => {
-    console.log("📝 Enviando prompt sugerido:", prompt);
-    
     // Enviar el mensaje usando el contexto (que ya tienes importado)
     if (sendMessage) {
       sendMessage(prompt);

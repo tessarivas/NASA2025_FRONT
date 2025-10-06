@@ -59,18 +59,12 @@ export function useChat() {
                     relationshipGraph.nodes.length > 0 && 
                     relationshipGraph.links.length > 0) {
                     
-                    console.log('🔥 SETTING RELATIONSHIP GRAPH:', JSON.stringify(relationshipGraph, null, 2));
-                    console.log('🔥 Nodes count:', relationshipGraph.nodes.length);
-                    console.log('🔥 Links count:', relationshipGraph.links.length);
-                    
                     // Force a new object reference to trigger re-render with deep copy
                     setRelationshipGraph({
                         nodes: [...relationshipGraph.nodes.map(node => ({...node}))],
                         links: [...relationshipGraph.links.map(link => ({...link}))]
                     });
                 } else {
-                    console.log('⚠️ NO VALID RELATIONSHIP GRAPH IN RESPONSE');
-                    console.log('⚠️ Graph data received:', relationshipGraph);
                     setRelationshipGraph(null);
                 }
 
@@ -98,7 +92,6 @@ export function useChat() {
             }
             
         } catch (error) {
-            console.error('Error sending message:', error);
             // Add error message
             const errorMsg = { 
                 text: "Error sending message", 
